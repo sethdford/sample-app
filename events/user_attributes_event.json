@@ -1,0 +1,8 @@
+{
+  "path": "/generateEmbeddingFromAttributes",
+  "httpMethod": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"userId\":\"user123\",\"attributes\":{\"last_login\":\"2025-02-24T12:30:00Z\",\"errors_encountered\":[\"500\",\"403\",\"Timeout\"],\"page_views\":10,\"subscription_plan\":\"Premium\",\"device\":\"Mobile\"}}"
+} 

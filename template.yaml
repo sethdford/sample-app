@@ -1,0 +1,248 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sample-app
+
+  Sample SAM Template for sample-app
+
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 512
+    Tracing: Active
+    LoggingConfig:
+      LogFormat: JSON
+  Api:
+    TracingEnabled: true
+
+Resources:
+  ##################################################
+  # 1) Embedding Lambda Function (Corrected)
+  ##################################################
+  EmbeddingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: EmbeddingFunction
+      Handler: com.sample.App::handleRequest
+      Runtime: java17
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_LOG_LEVEL: INFO
+          POWERTOOLS_LOGGER_LOG_EVENT: true
+          POWERTOOLS_METRICS_NAMESPACE: embedding-app
+          TABLE_NAME: "UserEmbeddings"
+          DAX_ENDPOINT: 
+            Fn::GetAtt: 
+              - UserEmbeddingsDAX
+              - ClusterDiscoveryEndpoint
+
+      Events:
+        GenerateEmbedding:
+          Type: Api
+          Properties:
+            Path: /generateEmbedding
+            Method: POST
+        GetEmbedding:
+          Type: Api
+          Properties:
+            Path: /getEmbedding
+            Method: POST
+
+  ##################################################
+  # 2) DynamoDB Table for Storing User Embeddings
+  ##################################################
+  UserEmbeddingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "UserEmbeddings"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "user_id"
+          AttributeType: "S"
+        - AttributeName: "embedding_type"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "user_id"
+          KeyType: "HASH"
+        - AttributeName: "embedding_type"
+          KeyType: "RANGE"
+
+  ##################################################
+  # 3) AWS DAX Cluster for Caching Embeddings
+  ##################################################
+  UserEmbeddingsDAX:
+    Type: AWS::DAX::Cluster
+    Properties:
+      ClusterName: "UserEmbeddingsDAX"
+      NodeType: "dax.t3.small"
+      ReplicationFactor: 1
+      IAMRoleARN: 
+        Fn::GetAtt: 
+          - DAXIAMRole
+          - Arn
+
+  ##################################################
+  # 4) IAM Role for DAX Cluster (Updated Policies)
+  ##################################################
+  DAXIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: dax.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DAXAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                Resource: 
+                  Fn::GetAtt: 
+                    - UserEmbeddingsTable
+                    - Arn
+
+  ##################################################
+  # 5) Application Insights Monitoring
+  ##################################################
+  ApplicationResourceGroup:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name: 
+        Fn::Sub: "ApplicationInsights-SAM-${AWS::StackName}"
+      ResourceQuery:
+        Type: "CLOUDFORMATION_STACK_1_0"
+
+  ApplicationInsightsMonitoring:
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      ResourceGroupName: 
+        Ref: ApplicationResourceGroup
+      AutoConfigurationEnabled: true
+
+  ##################################################
+  # 6) CloudWatch Dashboard for Telemetry
+  ##################################################
+  TelemetryDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: 
+        Fn::Sub: "${AWS::StackName}-Telemetry"
+      DashboardBody: 
+        Fn::Sub: |
+          {
+            "widgets": [
+              {
+                "type": "metric",
+                "x": 0,
+                "y": 0,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "metrics": [
+                    [ "embedding-app", "EmbeddingGenerationTime", "Service", "EmbeddingService" ],
+                    [ "embedding-app", "OpenSearchQueryTime", "Service", "UserMatchingService" ]
+                  ],
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "title": "Embedding Generation and Query Performance",
+                  "period": 60
+                }
+              },
+              {
+                "type": "metric",
+                "x": 12,
+                "y": 0,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "${EmbeddingFunction}" ],
+                    [ "AWS/Lambda", "Errors", "FunctionName", "${EmbeddingFunction}" ],
+                    [ "AWS/Lambda", "Duration", "FunctionName", "${EmbeddingFunction}" ]
+                  ],
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "title": "Lambda Performance",
+                  "period": 60
+                }
+              },
+              {
+                "type": "metric",
+                "x": 0,
+                "y": 6,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "metrics": [
+                    [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "UserEmbeddings", "Operation", "GetItem" ],
+                    [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "UserEmbeddings", "Operation", "PutItem" ]
+                  ],
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "title": "DynamoDB Latency",
+                  "period": 60
+                }
+              },
+              {
+                "type": "metric",
+                "x": 12,
+                "y": 6,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "metrics": [
+                    [ "AWS/DAX", "SuccessfulRequestLatency", "ClusterName", "UserEmbeddingsDAX" ]
+                  ],
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "title": "DAX Latency",
+                  "period": 60
+                }
+              }
+            ]
+          }
+
+Outputs:
+  ##################################################
+  # 7) API Gateway Output
+  ##################################################
+  EmbeddingApi:
+    Description: API Gateway endpoint URL for embedding functions
+    Value: 
+      Fn::Sub: "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+
+  EmbeddingFunction:
+    Description: Embedding Lambda Function ARN
+    Value: 
+      Fn::GetAtt: 
+        - EmbeddingFunction
+        - Arn
+
+  EmbeddingFunctionIamRole:
+    Description: IAM Role for Embedding Function
+    Value: 
+      Fn::GetAtt: 
+        - EmbeddingFunctionRole
+        - Arn
+      
+  TelemetryDashboardURL:
+    Description: URL for the CloudWatch Telemetry Dashboard
+    Value:
+      Fn::Sub: "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${AWS::StackName}-Telemetry"
