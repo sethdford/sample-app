@@ -1,0 +1,85 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "AllEmbeddingTypesDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.AllEmbeddingTypesDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "BehavioralEmbeddingDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.BehavioralEmbeddingDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "ClientEffortDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.ClientEffortDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "CloudWatchLogEmbeddingDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.CloudWatchLogEmbeddingDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "FinancialProfileDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.FinancialProfileDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "InterestEmbeddingDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.InterestEmbeddingDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "OpenSearchUserMatchingDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.OpenSearchUserMatchingDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "UserAttributeFormatterDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.UserAttributeFormatterDemo",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "UserInterestMatchingExample",
+            "request": "launch",
+            "mainClass": "com.sample.examples.UserInterestMatchingExample",
+            "projectName": "user-embedding-service"
+        },
+        {
+            "type": "java",
+            "name": "UserMatchingDemo",
+            "request": "launch",
+            "mainClass": "com.sample.examples.UserMatchingDemo",
+            "projectName": "user-embedding-service"
+        }
+    ]
+}

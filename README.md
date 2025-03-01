@@ -1,6 +1,6 @@
-# User Embedding Application
+# Financial Services Embedding Application
 
-This project contains source code and supporting files for a serverless application that uses AWS Bedrock to generate embeddings for user profiles and find similar users based on interests. You can deploy it with the SAM CLI.
+This project contains source code and supporting files for a serverless application that uses AWS Bedrock to generate embeddings for financial customer profiles, trading patterns, and behavioral analysis. Designed specifically for financial services companies like Schwab, Fidelity, JP Morgan, and Robinhood, this application enables sophisticated customer insights, personalized recommendations, and regulatory compliance monitoring.
 
 ## Project Structure
 
@@ -14,78 +14,71 @@ This project contains source code and supporting files for a serverless applicat
 The application uses several AWS resources:
 - **Lambda functions** for serverless compute
 - **API Gateway** for RESTful API endpoints
-- **DynamoDB** for storing user profiles and embeddings
-- **DAX** for caching embeddings and improving performance
-- **AWS Bedrock** for generating high-quality embeddings
-- **CloudWatch** for monitoring and telemetry
+- **DynamoDB** with **DAX** for high-performance storage and caching of embeddings
+- **AWS Bedrock** (Amazon Titan Embedding v2) for generating high-quality embeddings
+- **CloudWatch** for monitoring, telemetry, and log analysis
 
 These resources are defined in the `template.yaml` file. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
-## Features
+## Core Capabilities
 
-- Generate embeddings for user profiles using AWS Bedrock
-- Store user profiles and embeddings in DynamoDB
-- Find users with similar interests based on embedding similarity
-- Comprehensive telemetry dashboard for monitoring performance
-- Optional OpenSearch integration for faster similarity search with large datasets
-- User attribute formatting for AWS Titan embedding models
-- Multiple embedding approaches for different types of user data
+### 1. Financial Customer Profiling
+Generate comprehensive embeddings of customer financial profiles, including:
+- Investment preferences and allocations
+- Risk tolerance profiles
+- Financial goals (retirement, education, wealth accumulation)
+- Account types (IRA, 401k, brokerage)
+- Advisory service preferences
+
+### 2. Trading Pattern Analysis
+Analyze customer trading behaviors to identify:
+- Trading styles (day trader, buy-and-hold, diversified)
+- Preferred securities and asset classes
+- Order type preferences
+- Success rates and trade values
+- Trading journey timelines
+
+### 3. Compliance Monitoring
+Monitor and analyze compliance patterns:
+- Detect regulatory violations
+- Assess compliance risk levels
+- Track compliance events chronologically
+- Calculate compliance rates
+- Categorize by severity and type
+
+### 4. Behavioral Analysis
+Process customer behavioral data including:
+- Trading events
+- Offer acceptances
+- Advisory interactions
+- Search queries
+- Page views
+
+### 5. Client Effort Analysis
+Identify friction points in customer journeys:
+- Detect repeated errors and failed actions
+- Identify excessive navigation patterns
+- Monitor channel switching behavior
+- Calculate client effort scores
+- Generate recommendations for improving customer experience
 
 ## Embedding Approaches
 
-The application supports multiple approaches for generating embeddings from different types of user data:
+The application supports multiple approaches for generating embeddings from different types of financial customer data:
 
-### 1. Raw Text Embedding
+### 1. Financial Profile Embedding
 
-The most basic approach, which takes raw text input and generates embeddings directly using AWS Bedrock's Titan model.
-
-```java
-EmbeddingService embeddingService = new EmbeddingService();
-double[] embedding = embeddingService.generateEmbedding("User's raw text description");
-```
-
-### 2. User Attributes Embedding
-
-Converts structured user attributes (like login time, page views, subscription plan) into a format suitable for embedding generation.
+Processes financial interests, investment preferences, risk profiles, and account types to create embeddings that represent a client's financial profile.
 
 ```java
-UserAttributeFormatter formatter = new UserAttributeFormatter();
-Map<String, Object> encodedAttributes = formatter.encodeAttributes(userAttributes);
-String titanPrompt = formatter.createTitanPrompt(encodedAttributes);
-double[] embedding = embeddingService.generateEmbedding(titanPrompt);
-```
-
-### 3. Behavioral Embedding
-
-Processes user activity logs, clickstream data, and other behavioral signals to create embeddings that represent user behavior patterns.
-
-```java
-BehavioralEmbeddingService behavioralService = new BehavioralEmbeddingService();
-double[] embedding = behavioralService.generateBehavioralEmbedding(userId, behavioralData);
-```
-
-### 4. Interest Embedding
-
-Processes user interests and preferences to create embeddings for matching and recommendation purposes.
-
-```java
-InterestEmbeddingService interestService = new InterestEmbeddingService();
-double[] embedding = interestService.generateInterestEmbedding(userId, interests, preferences);
-```
-
-### 5. Financial Profile Embedding
-
-Specialized for financial institutions like ThetaCorp and BetaCorp, this approach processes financial interests, life events, and wellness concerns to create embeddings that represent a client's financial profile.
-
-```java
-FinancialInterestEmbeddingService financialService = new FinancialInterestEmbeddingService();
-double[] embedding = financialService.generateFinancialEmbedding(
+FinancialCustomerEmbeddingService financialService = new FinancialCustomerEmbeddingService();
+double[] embedding = financialService.processFinancialProfile(
     clientId, 
-    financialInterests, 
-    lifeEvents, 
-    wellnessConcerns, 
-    riskTolerance, 
-    timeHorizon
+    investmentPreferences, 
+    financialGoals, 
+    riskProfile, 
+    accountTypes,
+    advisoryServices
 );
 ```
 
@@ -93,104 +86,169 @@ This approach is particularly useful for:
 - Matching clients with appropriate financial advisors
 - Recommending relevant financial products
 - Identifying clients with similar financial profiles
-- Personalizing financial wellness content
+- Personalizing investment recommendations
 - Targeting communications around life events (retirement, college planning, etc.)
 
-### Enhanced DynamoDB Storage
+### 2. Trading Pattern Embedding
 
-All embedding types are stored in DynamoDB with metadata for easy retrieval and comparison:
+Analyzes trading logs and patterns to create embeddings that represent a client's trading behavior.
+
+```java
+CloudWatchLogEmbeddingService logService = new CloudWatchLogEmbeddingService();
+Map<String, Object> analysis = logService.analyzeTradingPatterns(userId, logGroupName, hoursBack);
+```
+
+This approach helps with:
+- Identifying trading styles and preferences
+- Detecting anomalous trading behavior
+- Providing personalized trading recommendations
+- Improving trade execution services
+- Compliance monitoring for trading activities
+
+### 3. Behavioral Embedding
+
+Processes investor activity logs, clickstream data, and other behavioral signals to create embeddings that represent investor behavior patterns.
+
+```java
+BehavioralEmbeddingService behavioralService = new BehavioralEmbeddingService();
+double[] embedding = behavioralService.generateBehavioralEmbedding(userId, behavioralData);
+```
+
+Key behavioral data includes:
+- Trade events (buy, sell, modify orders)
+- Offer acceptance events (advisory services, account upgrades)
+- Advisory interaction events (consultations, portfolio reviews)
+- Search queries (stock symbols, investment strategies)
+- Page views (research, account management, trading platforms)
+
+### 4. Compliance Pattern Embedding
+
+Analyzes compliance logs and regulatory events to create embeddings that represent compliance patterns.
+
+```java
+CloudWatchLogEmbeddingService logService = new CloudWatchLogEmbeddingService();
+Map<String, Object> analysis = logService.analyzeCompliancePatterns(userId, logGroupName, hoursBack);
+```
+
+This approach helps with:
+- Identifying compliance risk levels
+- Detecting patterns of regulatory violations
+- Monitoring KYC/AML compliance
+- Tracking compliance events over time
+- Generating compliance risk scores
+
+### 5. Client Effort Embedding
+
+Analyzes user behavior patterns from logs to identify high client effort scenarios such as repeated errors, excessive navigation, and channel switching.
+
+```java
+CloudWatchLogEmbeddingService service = new CloudWatchLogEmbeddingService();
+double[] embedding = service.generateClientEffortEmbedding(userId, logGroupName, hoursBack);
+Map<String, Object> effortAnalysis = service.analyzeClientEffort(logs);
+```
+
+This approach helps identify:
+- Friction points in customer journeys
+- UI/UX issues in trading platforms
+- Process inefficiencies in account management
+- Customer frustration indicators
+- Opportunities for service improvement
+
+## Enhanced DynamoDB Storage with DAX
+
+All embedding types are stored in DynamoDB with metadata for easy retrieval and comparison, with DAX providing high-performance caching:
 
 ```java
 EnhancedDynamoDBService dynamoDBService = new EnhancedDynamoDBService();
 dynamoDBService.storeEmbeddingWithMetadata(userId, embeddingType, embedding, metadata);
 ```
 
-### Factory Pattern
+The DAX client is automatically initialized if the `DAX_ENDPOINT` environment variable is set, providing:
+- Microsecond response times for embedding retrieval
+- Reduced load on DynamoDB
+- Improved application performance
+- Cost savings on DynamoDB read operations
 
-The application uses a factory pattern to create the appropriate embedding service based on the data type:
+## CloudWatch Log Analysis
 
-```java
-EmbeddingServiceFactory factory = EmbeddingServiceFactory.getInstance();
-Object service = factory.getServiceForDataType("financial_profile");
-```
+The application includes sophisticated log analysis capabilities specifically designed for financial services:
 
-### 6. Client Effort Embedding
+### Trading Log Analysis
+- Extracts trading patterns from CloudWatch logs
+- Identifies trading styles based on order types and frequencies
+- Calculates success rates and trade values
+- Tracks chronological trading journeys
 
-This approach analyzes user behavior patterns from logs to identify high client effort scenarios such as repeated errors, excessive navigation, button clicking, and channel switching. It helps identify friction points in user journeys.
+### Compliance Log Analysis
+- Monitors regulatory compliance events
+- Calculates compliance rates and risk levels
+- Categorizes compliance events by type and severity
+- Tracks violations and remediation actions
 
-```java
-// Generate client effort embedding
-CloudWatchLogEmbeddingService service = new CloudWatchLogEmbeddingService();
-double[] embedding = service.generateClientEffortEmbedding("user123", "ApplicationLogs", 24);
+### Security Log Analysis
+- Monitors authentication and authorization events
+- Tracks suspicious activities and security incidents
+- Identifies potential security vulnerabilities
+- Monitors multi-factor authentication usage
 
-// Analyze client effort patterns
-Map<String, Object> effortAnalysis = service.analyzeClientEffort(logs);
-System.out.println("Effort Score: " + effortAnalysis.get("effort_score"));
-System.out.println("High Effort: " + effortAnalysis.get("high_effort"));
-```
-
-## User Attribute Formatting
-
-The application includes a `UserAttributeFormatter` utility that converts raw user attributes into a format compatible with AWS Titan embedding models. This process involves:
-
-1. **Encoding raw attributes** - Converting timestamps, categorical variables, and numerical values into normalized formats
-2. **Creating Titan-compatible text prompts** - Transforming encoded attributes into natural language text that Titan can process
-
-### Example
-
-Raw user attributes:
-```json
-{
-  "user_id": "user123",
-  "last_login": "2025-02-24T12:30:00Z",
-  "errors_encountered": ["500", "403", "Timeout"],
-  "page_views": 10,
-  "subscription_plan": "Premium",
-  "device": "Mobile"
-}
-```
-
-Encoded attributes:
-```json
-{
-  "last_login_days": 5,
-  "errors_encountered_onehot": [1, 1, 1, 0, 0, 0],
-  "page_views_scaled": 0.1,
-  "subscription_plan_label": 2,
-  "device_onehot": [1, 0, 0]
-}
-```
-
-Titan-compatible text prompt:
-```
-User profile: Last active 5 days ago. Encountered errors: 500, 403, Timeout. Viewed 10 pages. Has Premium subscription. Uses Mobile device.
-```
-
-### API Endpoints
-
-The application provides the following API endpoints:
-
-- `/generateEmbedding` - Generate an embedding from raw text
-- `/getEmbedding` - Retrieve a stored embedding
-- `/generateEmbeddingFromAttributes` - Generate an embedding from user attributes
+### Account Activity Analysis
+- Tracks account creation, modification, and closure events
+- Monitors account funding and withdrawal activities
+- Analyzes account settings changes
+- Tracks beneficiary and ownership changes
 
 ## Demo Applications
 
 The project includes several demo applications to showcase different embedding approaches:
 
-1. **UserAttributeFormatterDemo** - Demonstrates how to format user attributes for embedding generation
-2. **BehavioralEmbeddingDemo** - Shows how to generate embeddings from user behavioral data
-3. **InterestEmbeddingDemo** - Illustrates embedding generation from user interests and preferences
-4. **FinancialProfileDemo** - Showcases financial profile embeddings for clients of financial institutions
-5. **AllEmbeddingTypesDemo** - Comprehensive demo that showcases all embedding types and compares them
-6. **CloudWatchLogEmbeddingDemo** - Shows how to generate embeddings from CloudWatch logs
-7. **ClientEffortDemo** - Demonstrates how to detect high client effort patterns and generate recommendations
+1. **FinancialProfileDemo** - Showcases financial profile embeddings for clients of financial institutions
+2. **BehavioralEmbeddingDemo** - Shows how to generate embeddings from investor behavioral data
+3. **CloudWatchLogEmbeddingDemo** - Demonstrates how to analyze trading patterns and compliance events
+4. **ClientEffortDemo** - Shows how to detect high client effort patterns in customer journeys
+5. **TradingPatternDemo** - Illustrates how to analyze and categorize trading behaviors
 
 To run a demo, use the following command:
 
 ```bash
 java -cp target/EmbeddingFunction-1.0.jar com.sample.examples.FinancialProfileDemo
 ```
+
+## Use Cases for Financial Services
+
+### 1. Personalized Investment Recommendations
+- Generate embeddings from client financial profiles
+- Match with similar investment products and strategies
+- Provide tailored recommendations based on risk tolerance and goals
+
+### 2. Fraud Detection
+- Identify anomalous trading patterns using embedding comparisons
+- Detect unusual account activities that deviate from normal behavior
+- Flag potentially fraudulent transactions for review
+
+### 3. Client Segmentation
+- Cluster clients based on embedding similarity
+- Create targeted marketing campaigns for specific segments
+- Develop specialized service offerings for different client groups
+
+### 4. Advisor Matching
+- Match clients with financial advisors based on embedding similarity
+- Ensure compatibility between client needs and advisor expertise
+- Improve client satisfaction and retention
+
+### 5. Regulatory Compliance
+- Monitor trading activities for compliance violations
+- Generate compliance risk scores for clients and transactions
+- Provide early warning for potential regulatory issues
+
+### 6. Portfolio Analysis
+- Compare client portfolios using embedding similarity
+- Identify diversification opportunities
+- Recommend portfolio adjustments based on similar clients
+
+### 7. Client Experience Optimization
+- Identify high-effort client journeys
+- Optimize digital platforms based on behavioral patterns
+- Reduce friction in trading and account management processes
 
 ## Development Environment
 
@@ -249,35 +307,50 @@ Test a single function by invoking it directly with a test event:
 sam local invoke EmbeddingFunction --event events/event.json
 ```
 
-The SAM CLI can also emulate your application's API:
+## API Endpoints
 
-```bash
-sam local start-api
-curl http://localhost:3000/generateEmbedding
-```
+The application provides the following API endpoints:
 
-## Monitoring and Telemetry
+- `/generateFinancialEmbedding` - Generate an embedding from financial profile data
+- `/analyzeTradingPatterns` - Analyze trading patterns from log data
+- `/analyzeCompliancePatterns` - Analyze compliance patterns from log data
+- `/generateBehavioralEmbedding` - Generate an embedding from behavioral data
+- `/analyzeClientEffort` - Analyze client effort from log data
+- `/findSimilarClients` - Find clients with similar profiles based on embedding similarity
 
-The application includes a CloudWatch dashboard for monitoring performance metrics:
+## Technical Implementation Details
 
-- Embedding generation time
-- Query performance
-- Lambda function metrics (invocations, errors, duration)
-- DynamoDB latency
-- DAX cache performance
+### Amazon Titan Embedding v2
 
-You can access the dashboard from the CloudWatch console or via the URL provided in the stack outputs.
+The application uses Amazon Titan Embedding v2, which offers several advantages:
+- Support for different embedding dimensions (256, 512, or 1024)
+- Improved performance for financial services use cases
+- Support for more languages and longer text inputs
+- Lower cost per token compared to v1
 
-## Cleanup
+### DAX Integration
 
-To delete the application that you created, use the AWS CLI:
+DynamoDB Accelerator (DAX) is used to provide microsecond response times:
+- Automatically initialized when `DAX_ENDPOINT` environment variable is set
+- Provides in-memory caching for frequently accessed embeddings
+- Reduces latency for embedding retrieval operations
+- Scales automatically with your application
 
-```bash
-sam delete --stack-name <your-stack-name>
-```
+### CloudWatch Log Analysis
 
-## Resources
+The application includes sophisticated pattern matching for log analysis:
+- Regular expressions for extracting trading information
+- Pattern matching for compliance and security events
+- Temporal analysis for detecting anomalous patterns
+- Sentiment analysis for customer communications
 
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
+### Embedding Metadata
 
-For more information about AWS Bedrock, see the [AWS Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html).
+All embeddings are stored with rich metadata:
+- Model information (amazon.titan-embed-text-v2)
+- Generation timestamp
+- Performance metrics
+- Source data characteristics
+- Embedding dimensions and type
+
+This metadata enables effective management and analysis of embeddings over time.

@@ -10,7 +10,7 @@ import com.sample.model.EmbeddingMetadata;
 /**
  * Service for generating embeddings from user behavioral data.
  * This service processes user activity logs, clickstream data, and other behavioral signals
- * to create embeddings that represent user behavior patterns.
+ * to create embeddings that represent user behavior patterns in financial services contexts.
  */
 public class BehavioralEmbeddingService {
     
@@ -20,15 +20,19 @@ public class BehavioralEmbeddingService {
     // Constants for behavioral data types
     private static final String CLICK_EVENT = "click";
     private static final String VIEW_EVENT = "view";
-    private static final String PURCHASE_EVENT = "purchase";
+    private static final String TRADE_EVENT = "trade";
     private static final String SEARCH_EVENT = "search";
+    private static final String OFFER_ACCEPTANCE_EVENT = "offer_acceptance";
+    private static final String ADVISORY_INTERACTION_EVENT = "advisory_interaction";
     
     // Weights for different event types
     private static final Map<String, Double> EVENT_WEIGHTS = Map.of(
         CLICK_EVENT, 1.0,
         VIEW_EVENT, 0.5,
-        PURCHASE_EVENT, 3.0,
-        SEARCH_EVENT, 2.0
+        TRADE_EVENT, 3.0,
+        SEARCH_EVENT, 2.0,
+        OFFER_ACCEPTANCE_EVENT, 2.5,
+        ADVISORY_INTERACTION_EVENT, 2.0
     );
     
     public BehavioralEmbeddingService() {
@@ -53,7 +57,7 @@ public class BehavioralEmbeddingService {
         long endTime = System.currentTimeMillis();
         
         // 3. Create metadata
-        EmbeddingMetadata metadata = new EmbeddingMetadata("behavioral", "amazon.titan-embed-text-v1");
+        EmbeddingMetadata metadata = new EmbeddingMetadata("behavioral", "amazon.titan-embed-text-v2");
         metadata.addEncodingDetail("event_count", countEvents(behavioralData));
         metadata.addEncodingDetail("data_points", behavioralData.size());
         metadata.addPerformanceMetric("generation_time_ms", endTime - startTime);
@@ -76,7 +80,7 @@ public class BehavioralEmbeddingService {
      * @return Processed text representation
      */
     private String processBehavioralData(Map<String, Object> behavioralData) {
-        StringBuilder processedText = new StringBuilder("User behavior: ");
+        StringBuilder processedText = new StringBuilder("Investor behavior: ");
         
         // Process events if present
         if (behavioralData.containsKey("events")) {
@@ -97,6 +101,20 @@ public class BehavioralEmbeddingService {
             @SuppressWarnings("unchecked")
             List<String> searchQueries = (List<String>) behavioralData.get("search_queries");
             processSearchQueries(searchQueries, processedText);
+        }
+        
+        // Process offer interactions if present
+        if (behavioralData.containsKey("offer_interactions")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> offerInteractions = (List<Map<String, Object>>) behavioralData.get("offer_interactions");
+            processOfferInteractions(offerInteractions, processedText);
+        }
+        
+        // Process advisory interactions if present
+        if (behavioralData.containsKey("advisory_interactions")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> advisoryInteractions = (List<Map<String, Object>>) behavioralData.get("advisory_interactions");
+            processAdvisoryInteractions(advisoryInteractions, processedText);
         }
         
         return processedText.toString();
@@ -136,11 +154,24 @@ public class BehavioralEmbeddingService {
                 String itemId = (String) event.get("item_id");
                 String category = (String) event.get("category");
                 
-                builder.append(eventType)
-                       .append(" ")
-                       .append(category)
-                       .append(" item ")
-                       .append(itemId);
+                if (TRADE_EVENT.equals(eventType)) {
+                    String action = (String) event.getOrDefault("action", "traded");
+                    String quantity = event.containsKey("quantity") ? event.get("quantity").toString() : "";
+                    
+                    builder.append(action)
+                           .append(" ")
+                           .append(quantity)
+                           .append(" ")
+                           .append(category)
+                           .append(" ")
+                           .append(itemId);
+                } else {
+                    builder.append(eventType)
+                           .append(" ")
+                           .append(category)
+                           .append(" item ")
+                           .append(itemId);
+                }
                 
                 if (i < recentEventCount - 1) {
                     builder.append(", ");
@@ -204,15 +235,107 @@ public class BehavioralEmbeddingService {
     }
     
     /**
+     * Process offer interaction data into text.
+     */
+    private void processOfferInteractions(List<Map<String, Object>> offerInteractions, StringBuilder builder) {
+        if (offerInteractions.isEmpty()) {
+            return;
+        }
+        
+        int acceptedCount = 0;
+        int rejectedCount = 0;
+        int viewedCount = 0;
+        
+        List<String> acceptedOffers = new ArrayList<>();
+        
+        for (Map<String, Object> interaction : offerInteractions) {
+            String status = (String) interaction.get("status");
+            String offerType = (String) interaction.get("offer_type");
+            
+            if ("accepted".equalsIgnoreCase(status)) {
+                acceptedCount++;
+                if (acceptedOffers.size() < 3) {
+                    acceptedOffers.add(offerType);
+                }
+            } else if ("rejected".equalsIgnoreCase(status)) {
+                rejectedCount++;
+            } else if ("viewed".equalsIgnoreCase(status)) {
+                viewedCount++;
+            }
+        }
+        
+        builder.append("Offer interactions: ");
+        builder.append("accepted ").append(acceptedCount).append(", ");
+        builder.append("rejected ").append(rejectedCount).append(", ");
+        builder.append("viewed ").append(viewedCount).append(". ");
+        
+        if (!acceptedOffers.isEmpty()) {
+            builder.append("Recently accepted offers: ");
+            builder.append(String.join(", ", acceptedOffers));
+            builder.append(". ");
+        }
+    }
+    
+    /**
+     * Process advisory interaction data into text.
+     */
+    private void processAdvisoryInteractions(List<Map<String, Object>> advisoryInteractions, StringBuilder builder) {
+        if (advisoryInteractions.isEmpty()) {
+            return;
+        }
+        
+        Map<String, Integer> interactionTypes = new HashMap<>();
+        
+        for (Map<String, Object> interaction : advisoryInteractions) {
+            String type = (String) interaction.get("type");
+            interactionTypes.put(type, interactionTypes.getOrDefault(type, 0) + 1);
+        }
+        
+        builder.append("Advisory interactions: ");
+        List<String> descriptions = new ArrayList<>();
+        
+        for (Map.Entry<String, Integer> entry : interactionTypes.entrySet()) {
+            descriptions.add(entry.getValue() + " " + entry.getKey());
+        }
+        
+        builder.append(String.join(", ", descriptions));
+        builder.append(". ");
+        
+        // Add most recent advisory topic if available
+        if (!advisoryInteractions.isEmpty()) {
+            Map<String, Object> mostRecent = advisoryInteractions.get(0);
+            if (mostRecent.containsKey("topic")) {
+                builder.append("Most recent advisory topic: ")
+                       .append(mostRecent.get("topic"))
+                       .append(". ");
+            }
+        }
+    }
+    
+    /**
      * Count the total number of events in the behavioral data.
      */
     private int countEvents(Map<String, Object> behavioralData) {
-        if (!behavioralData.containsKey("events")) {
-            return 0;
+        int totalEvents = 0;
+        
+        if (behavioralData.containsKey("events")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> events = (List<Map<String, Object>>) behavioralData.get("events");
+            totalEvents += events.size();
         }
         
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> events = (List<Map<String, Object>>) behavioralData.get("events");
-        return events.size();
+        if (behavioralData.containsKey("offer_interactions")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> offerInteractions = (List<Map<String, Object>>) behavioralData.get("offer_interactions");
+            totalEvents += offerInteractions.size();
+        }
+        
+        if (behavioralData.containsKey("advisory_interactions")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> advisoryInteractions = (List<Map<String, Object>>) behavioralData.get("advisory_interactions");
+            totalEvents += advisoryInteractions.size();
+        }
+        
+        return totalEvents;
     }
 } 
