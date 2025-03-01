@@ -29,6 +29,17 @@ This architecture ensures:
 - Automatic scaling to handle varying workloads
 - High availability and durability for all status data
 
+### Date Handling
+
+All date fields in the Status Tracker API are represented as strings in ISO-8601 format:
+
+- `createdDate`: When the status was created (e.g., `2023-06-15T14:30:45.123Z`)
+- `lastUpdatedDate`: When the status was last updated (e.g., `2023-06-15T15:45:22.456Z`)
+- `estimatedCompletionDate`: When the status is expected to be completed (e.g., `2023-07-01T00:00:00.000Z`)
+- `actualCompletionDate`: When the status was actually completed (e.g., `2023-06-28T16:20:10.123Z`)
+
+This string-based approach simplifies serialization/deserialization and ensures consistent date representation across different systems and programming languages.
+
 ## Endpoints
 
 ### Create Status

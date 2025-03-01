@@ -11,6 +11,7 @@ A serverless AWS Lambda function for tracking client statuses in financial servi
 - **Client-Advisor Relationship Management**: Track statuses across client-advisor relationships
 - **High-Performance Data Storage**: Utilizes Amazon DynamoDB with DAX for fast, scalable data access
 - **Efficient Caching**: Implements DynamoDB Accelerator (DAX) for improved read performance
+- **Simplified Date Handling**: Uses string-based date representation for better compatibility across systems and easier serialization
 
 ## Status Types
 
@@ -188,6 +189,20 @@ The application uses a sophisticated data storage approach:
    - If data is not in cache, DAX retrieves it from DynamoDB and caches it for future requests
 
 This architecture ensures high performance, scalability, and reliability for the Status Tracker service.
+
+## Date Handling
+
+The Status Tracker Function uses a string-based approach for handling dates:
+
+- All date fields (`createdDate`, `lastUpdatedDate`, `estimatedCompletionDate`, `actualCompletionDate`) are stored as strings
+- Dates are formatted as ISO-8601 strings (e.g., `2023-06-15T14:30:45.123Z`)
+- This approach provides several benefits:
+  - Simplified serialization/deserialization when working with JSON
+  - Consistent representation across different systems and programming languages
+  - Easier to read and debug in logs and database records
+  - Avoids timezone and formatting inconsistencies
+
+When working with dates in your application code, you can convert these strings to Date objects as needed using standard Java date parsing functions.
 
 ## License
 
