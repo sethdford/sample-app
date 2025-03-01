@@ -1,0 +1,211 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Status Tracker Function
+  
+  SAM Template for Status Tracker Function with DynamoDB and DAX
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: java17
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        DAX_ENDPOINT: !GetAtt StatusTrackerDAXCluster.ClusterDiscoveryEndpoint
+
+Resources:
+  StatusTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: com.sample.StatusTracker::handleRequest
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StatusTrackerTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - comprehend:DetectSentiment
+              Resource: '*'
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dax:*
+              Resource: !GetAtt StatusTrackerDAXCluster.Arn
+      Events:
+        CreateStatus:
+          Type: Api
+          Properties:
+            Path: /status
+            Method: post
+        GetStatus:
+          Type: Api
+          Properties:
+            Path: /status/{statusId}
+            Method: get
+        UpdateStatus:
+          Type: Api
+          Properties:
+            Path: /status/{statusId}
+            Method: put
+        ListClientStatuses:
+          Type: Api
+          Properties:
+            Path: /client/{clientId}/statuses
+            Method: get
+        ListAdvisorClientStatuses:
+          Type: Api
+          Properties:
+            Path: /advisor/{advisorId}/client-statuses
+            Method: get
+        SearchStatuses:
+          Type: Api
+          Properties:
+            Path: /statuses/search
+            Method: post
+        GetStatusBySourceId:
+          Type: Api
+          Properties:
+            Path: /status/source
+            Method: get
+        GetStatusByTrackingId:
+          Type: Api
+          Properties:
+            Path: /status/tracking
+            Method: get
+
+  StatusTrackerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: StatusTracker
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: statusId
+          AttributeType: S
+        - AttributeName: clientId
+          AttributeType: S
+        - AttributeName: advisorId
+          AttributeType: S
+        - AttributeName: statusType
+          AttributeType: S
+        - AttributeName: sourceId
+          AttributeType: S
+        - AttributeName: trackingId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: statusId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ClientIdIndex
+          KeySchema:
+            - AttributeName: clientId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: AdvisorIdIndex
+          KeySchema:
+            - AttributeName: advisorId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: StatusTypeIndex
+          KeySchema:
+            - AttributeName: statusType
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: SourceIdIndex
+          KeySchema:
+            - AttributeName: sourceId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: TrackingIdIndex
+          KeySchema:
+            - AttributeName: trackingId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  StatusTrackerDAXSubnetGroup:
+    Type: AWS::DAX::SubnetGroup
+    Properties:
+      SubnetGroupName: StatusTrackerDAXSubnetGroup
+      Description: Subnet group for Status Tracker DAX cluster
+      SubnetIds:
+        - !Ref DAXSubnet1
+        - !Ref DAXSubnet2
+        - !Ref DAXSubnet3
+
+  StatusTrackerDAXCluster:
+    Type: AWS::DAX::Cluster
+    Properties:
+      ClusterName: StatusTrackerDAXCluster
+      NodeType: dax.t3.small
+      ReplicationFactor: 3
+      IAMRoleARN: !GetAtt DAXServiceRole.Arn
+      SubnetGroupName: !Ref StatusTrackerDAXSubnetGroup
+      SecurityGroupIds:
+        - !Ref DAXSecurityGroup
+      Description: DAX cluster for Status Tracker
+
+  DAXServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: dax.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+
+  DAXSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for DAX cluster
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8111
+          ToPort: 8111
+          SourceSecurityGroupId: !GetAtt LambdaSecurityGroup.GroupId
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda function
+      VpcId: !Ref VPCID
+
+Parameters:
+  VPCID:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for DAX cluster
+  DAXSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: First subnet for DAX cluster
+  DAXSubnet2:
+    Type: AWS::EC2::Subnet::Id
+    Description: Second subnet for DAX cluster
+  DAXSubnet3:
+    Type: AWS::EC2::Subnet::Id
+    Description: Third subnet for DAX cluster
+
+Outputs:
+  StatusTrackerApi:
+    Description: API Gateway endpoint URL for Prod stage for Status Tracker function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  StatusTrackerFunction:
+    Description: Status Tracker Lambda Function ARN
+    Value: !GetAtt StatusTrackerFunction.Arn
+  StatusTrackerTable:
+    Description: Status Tracker DynamoDB Table Name
+    Value: !Ref StatusTrackerTable
+  StatusTrackerDAXCluster:
+    Description: Status Tracker DAX Cluster Endpoint
+    Value: !GetAtt StatusTrackerDAXCluster.ClusterDiscoveryEndpoint 
