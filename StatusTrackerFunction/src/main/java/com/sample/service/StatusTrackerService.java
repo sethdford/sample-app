@@ -43,6 +43,19 @@ public class StatusTrackerService {
     public static final String STAGE_CANCELLED = "cancelled";
     public static final String STAGE_ON_HOLD = "on_hold";
     
+    // Source system URL templates
+    private static final Map<String, String> SOURCE_SYSTEM_URL_TEMPLATES = new HashMap<>();
+    static {
+        // Initialize URL templates for different source system prefixes
+        SOURCE_SYSTEM_URL_TEMPLATES.put("WF-", "https://workflow.example.com/view?id=");
+        SOURCE_SYSTEM_URL_TEMPLATES.put("ORD-", "https://orders.example.com/order?id=");
+        SOURCE_SYSTEM_URL_TEMPLATES.put("APP-", "https://applications.example.com/app?id=");
+        SOURCE_SYSTEM_URL_TEMPLATES.put("DOC-", "https://documents.example.com/doc?id=");
+        SOURCE_SYSTEM_URL_TEMPLATES.put("MTG-", "https://meetings.example.com/meeting?id=");
+        // Default URL template for unknown prefixes
+        SOURCE_SYSTEM_URL_TEMPLATES.put("DEFAULT", "https://portal.example.com/lookup?id=");
+    }
+    
     // AWS clients
     private final ComprehendClient comprehendClient;
     private final StatusDynamoDBService dynamoDBService;
@@ -100,7 +113,15 @@ public class StatusTrackerService {
             
             // Set source ID if provided
             if (statusData.containsKey("sourceId")) {
-                status.setSourceId((String) statusData.get("sourceId"));
+                String sourceId = (String) statusData.get("sourceId");
+                status.setSourceId(sourceId);
+                
+                // Set source system URL if provided, otherwise generate one
+                if (statusData.containsKey("sourceSystemUrl")) {
+                    status.setSourceSystemUrl((String) statusData.get("sourceSystemUrl"));
+                } else if (sourceId != null && !sourceId.isEmpty()) {
+                    status.setSourceSystemUrl(generateSourceSystemUrl(sourceId));
+                }
             }
             
             // Set tracking ID if provided, otherwise use the generated one
@@ -259,49 +280,49 @@ public class StatusTrackerService {
      */
     public Status updateStatus(String statusId, Map<String, Object> statusData) {
         try {
-            Status status = dynamoDBService.getStatus(statusId);
+            Status existingStatus = dynamoDBService.getStatus(statusId);
             
-            if (status == null) {
+            if (existingStatus == null) {
                 return null;
             }
             
             // Track previous stage for history
-            String previousStage = status.getCurrentStage();
+            String previousStage = existingStatus.getCurrentStage();
             
             // Update fields if provided
             if (statusData.containsKey("currentStage")) {
-                status.setCurrentStage((String) statusData.get("currentStage"));
+                existingStatus.setCurrentStage((String) statusData.get("currentStage"));
             }
             
             if (statusData.containsKey("statusSummary")) {
-                status.setStatusSummary((String) statusData.get("statusSummary"));
+                existingStatus.setStatusSummary((String) statusData.get("statusSummary"));
                 
                 // Re-analyze sentiment if summary changed
-                String sentiment = analyzeSentiment(status.getStatusSummary());
-                status.addMetadata("sentiment", sentiment);
+                String sentiment = analyzeSentiment(existingStatus.getStatusSummary());
+                existingStatus.addMetadata("sentiment", sentiment);
             }
             
             if (statusData.containsKey("statusDetails")) {
-                status.setStatusDetails((Map<String, Object>) statusData.get("statusDetails"));
+                existingStatus.setStatusDetails((Map<String, Object>) statusData.get("statusDetails"));
             }
             
             if (statusData.containsKey("requiredActions")) {
-                status.setRequiredActions((List<String>) statusData.get("requiredActions"));
+                existingStatus.setRequiredActions((List<String>) statusData.get("requiredActions"));
             }
             
             if (statusData.containsKey("completedActions")) {
-                status.setCompletedActions((List<String>) statusData.get("completedActions"));
+                existingStatus.setCompletedActions((List<String>) statusData.get("completedActions"));
             }
             
             if (statusData.containsKey("priority")) {
-                status.setPriority((String) statusData.get("priority"));
+                existingStatus.setPriority((String) statusData.get("priority"));
             }
             
             if (statusData.containsKey("estimatedCompletionDate")) {
                 // Parse date from string if needed
                 Object dateObj = statusData.get("estimatedCompletionDate");
                 if (dateObj instanceof String) {
-                    status.setEstimatedCompletionDate((String) dateObj);
+                    existingStatus.setEstimatedCompletionDate((String) dateObj);
                 }
             }
             
@@ -309,37 +330,37 @@ public class StatusTrackerService {
                 // Parse date from string if needed
                 Object dateObj = statusData.get("actualCompletionDate");
                 if (dateObj instanceof String) {
-                    status.setActualCompletionDate((String) dateObj);
+                    existingStatus.setActualCompletionDate((String) dateObj);
                 }
             }
             
             if (statusData.containsKey("tags")) {
-                status.setTags((Map<String, String>) statusData.get("tags"));
+                existingStatus.setTags((Map<String, String>) statusData.get("tags"));
             }
             
             if (statusData.containsKey("metadata")) {
                 Map<String, Object> newMetadata = (Map<String, Object>) statusData.get("metadata");
-                Map<String, Object> existingMetadata = status.getMetadata();
+                Map<String, Object> existingMetadata = existingStatus.getMetadata();
                 
                 // Merge metadata
                 if (existingMetadata == null) {
-                    status.setMetadata(newMetadata);
+                    existingStatus.setMetadata(newMetadata);
                 } else {
                     existingMetadata.putAll(newMetadata);
                 }
             }
             
             // Update last updated info
-            status.setLastUpdatedBy((String) statusData.get("updatedBy"));
-            status.updateLastUpdatedDate();
+            existingStatus.setLastUpdatedBy((String) statusData.get("updatedBy"));
+            existingStatus.updateLastUpdatedDate();
             
             // Create history entry if stage changed
-            if (!previousStage.equals(status.getCurrentStage())) {
+            if (!previousStage.equals(existingStatus.getCurrentStage())) {
                 StatusHistoryItem historyItem = new StatusHistoryItem();
                 historyItem.setTimestamp(Instant.now().toString());
-                historyItem.setChangedBy(status.getLastUpdatedBy());
+                historyItem.setChangedBy(existingStatus.getLastUpdatedBy());
                 historyItem.setPreviousStage(previousStage);
-                historyItem.setNewStage(status.getCurrentStage());
+                historyItem.setNewStage(existingStatus.getCurrentStage());
                 
                 if (statusData.containsKey("changeReason")) {
                     historyItem.setChangeReason((String) statusData.get("changeReason"));
@@ -350,18 +371,31 @@ public class StatusTrackerService {
                 }
                 
                 // Add to history
-                List<StatusHistoryItem> history = status.getStatusHistory();
+                List<StatusHistoryItem> history = existingStatus.getStatusHistory();
                 if (history == null) {
                     history = new ArrayList<>();
-                    status.setStatusHistory(history);
+                    existingStatus.setStatusHistory(history);
                 }
                 history.add(historyItem);
             }
             
-            // Store the updated status in DynamoDB
-            dynamoDBService.putStatus(status);
+            // Update source ID if provided
+            if (statusData.containsKey("sourceId")) {
+                String sourceId = (String) statusData.get("sourceId");
+                existingStatus.setSourceId(sourceId);
+                
+                // Update source system URL if provided, otherwise generate one
+                if (statusData.containsKey("sourceSystemUrl")) {
+                    existingStatus.setSourceSystemUrl((String) statusData.get("sourceSystemUrl"));
+                } else if (sourceId != null && !sourceId.isEmpty()) {
+                    existingStatus.setSourceSystemUrl(generateSourceSystemUrl(sourceId));
+                }
+            }
             
-            return status;
+            // Store the updated status in DynamoDB
+            dynamoDBService.putStatus(existingStatus);
+            
+            return existingStatus;
         } catch (Exception e) {
             throw new RuntimeException("Error updating status: " + e.getMessage(), e);
         }
@@ -438,5 +472,31 @@ public class StatusTrackerService {
             // Log the error in production
             return "neutral";
         }
+    }
+    
+    /**
+     * Generates a URL to the source system based on the sourceId.
+     * Different URL templates are used based on the sourceId prefix.
+     * 
+     * @param sourceId The source ID
+     * @return A URL to the source system
+     */
+    public String generateSourceSystemUrl(String sourceId) {
+        if (sourceId == null || sourceId.isEmpty()) {
+            return null;
+        }
+        
+        // Find the appropriate URL template based on the sourceId prefix
+        String urlTemplate = SOURCE_SYSTEM_URL_TEMPLATES.get("DEFAULT");
+        for (Map.Entry<String, String> entry : SOURCE_SYSTEM_URL_TEMPLATES.entrySet()) {
+            String prefix = entry.getKey();
+            if (!prefix.equals("DEFAULT") && sourceId.startsWith(prefix)) {
+                urlTemplate = entry.getValue();
+                break;
+            }
+        }
+        
+        // Generate the URL by appending the sourceId to the template
+        return urlTemplate + sourceId;
     }
 }

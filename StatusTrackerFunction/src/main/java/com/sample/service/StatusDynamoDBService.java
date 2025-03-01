@@ -454,6 +454,10 @@ public class StatusDynamoDBService {
             item.put("trackingId", AttributeValue.builder().s(status.getTrackingId()).build());
         }
         
+        if (status.getSourceSystemUrl() != null) {
+            item.put("sourceSystemUrl", AttributeValue.builder().s(status.getSourceSystemUrl()).build());
+        }
+        
         // Convert complex objects to JSON strings
         if (status.getStatusDetails() != null) {
             item.put("statusDetails", AttributeValue.builder().s(objectMapper.writeValueAsString(status.getStatusDetails())).build());
@@ -576,6 +580,10 @@ public class StatusDynamoDBService {
         
         if (item.containsKey("trackingId")) {
             status.setTrackingId(item.get("trackingId").s());
+        }
+        
+        if (item.containsKey("sourceSystemUrl")) {
+            status.setSourceSystemUrl(item.get("sourceSystemUrl").s());
         }
         
         // Convert JSON strings to complex objects

@@ -12,6 +12,7 @@ A serverless AWS Lambda function for tracking client statuses in financial servi
 - **High-Performance Data Storage**: Utilizes Amazon DynamoDB with DAX for fast, scalable data access
 - **Efficient Caching**: Implements DynamoDB Accelerator (DAX) for improved read performance
 - **Simplified Date Handling**: Uses string-based date representation for better compatibility across systems and easier serialization
+- **Source System Integration**: Provides direct links to source systems for each status using automatically generated URLs
 
 ## Status Types
 

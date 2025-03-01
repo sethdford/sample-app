@@ -40,6 +40,20 @@ All date fields in the Status Tracker API are represented as strings in ISO-8601
 
 This string-based approach simplifies serialization/deserialization and ensures consistent date representation across different systems and programming languages.
 
+### Source System Integration
+
+The Status Tracker API provides integration with source systems through the following fields:
+
+- `sourceId`: An identifier from the source system (e.g., workflow ID, order ID, application ID)
+- `trackingId`: A user-friendly tracking ID for customer service reference
+- `sourceSystemUrl`: A URL to the source system where users can view the status directly
+
+The `sourceSystemUrl` is automatically generated based on the `sourceId` prefix, but can also be explicitly provided. For example:
+- A sourceId of "WF-12345" will generate a URL like "https://workflow.example.com/view?id=WF-12345"
+- A sourceId of "ORD-67890" will generate a URL like "https://orders.example.com/order?id=ORD-67890"
+
+This allows users to easily navigate to the source system for more detailed information about the status.
+
 ## Endpoints
 
 ### Create Status
@@ -97,6 +111,7 @@ Creates a new status entry for tracking a financial transaction or client intera
   "lastUpdatedBy": "advisor456",
   "sourceId": "WF-12345",
   "trackingId": "ST-A7B3C-230615",
+  "sourceSystemUrl": "https://workflow.example.com/view?id=WF-12345",
   "statusDetails": {
     "accountType": "Individual Brokerage",
     "initialDeposit": 10000.00,
@@ -157,6 +172,7 @@ Retrieves a specific status by ID.
   "lastUpdatedBy": "advisor456",
   "sourceId": "WF-12345",
   "trackingId": "ST-A7B3C-230615",
+  "sourceSystemUrl": "https://workflow.example.com/view?id=WF-12345",
   "statusDetails": {
     "accountType": "Individual Brokerage",
     "initialDeposit": 10000.00,
@@ -228,6 +244,7 @@ Retrieves a specific status by its source ID.
   "lastUpdatedBy": "advisor456",
   "sourceId": "WF-12345",
   "trackingId": "ST-A7B3C-230615",
+  "sourceSystemUrl": "https://workflow.example.com/view?id=WF-12345",
   "statusDetails": {
     "accountType": "Individual Brokerage",
     "initialDeposit": 10000.00,
@@ -299,6 +316,7 @@ Retrieves a specific status by its tracking ID.
   "lastUpdatedBy": "advisor456",
   "sourceId": "WF-12345",
   "trackingId": "ST-A7B3C-230615",
+  "sourceSystemUrl": "https://workflow.example.com/view?id=WF-12345",
   "statusDetails": {
     "accountType": "Individual Brokerage",
     "initialDeposit": 10000.00,
@@ -388,6 +406,7 @@ Updates an existing status entry.
   "lastUpdatedBy": "advisor456",
   "sourceId": "WF-12345",
   "trackingId": "ST-A7B3C-230615",
+  "sourceSystemUrl": "https://workflow.example.com/view?id=WF-12345",
   "statusDetails": {
     "accountType": "Individual Brokerage",
     "initialDeposit": 10000.00,

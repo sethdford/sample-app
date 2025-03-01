@@ -30,6 +30,7 @@ public class Status implements Serializable {
     private String lastUpdatedBy;
     private String sourceId; // ID from source system (workflow ID, order ID, etc.)
     private String trackingId; // User-friendly tracking ID for customer service
+    private String sourceSystemUrl; // URL to the source system where users can view the status
     
     // Status-specific fields
     private Map<String, Object> statusDetails;
@@ -162,6 +163,14 @@ public class Status implements Serializable {
     
     public void setTrackingId(String trackingId) {
         this.trackingId = trackingId;
+    }
+    
+    public String getSourceSystemUrl() {
+        return sourceSystemUrl;
+    }
+    
+    public void setSourceSystemUrl(String sourceSystemUrl) {
+        this.sourceSystemUrl = sourceSystemUrl;
     }
     
     public Map<String, Object> getStatusDetails() {
