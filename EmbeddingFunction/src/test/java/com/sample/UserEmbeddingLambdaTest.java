@@ -372,6 +372,14 @@ public class UserEmbeddingLambdaTest {
             return result;
         }
         
+        @Override
+        protected List<Double> getUserEmbedding(String userId, String embeddingType) throws Exception {
+            if (testEmbeddings.containsKey(userId) && testEmbeddings.get(userId).containsKey(embeddingType)) {
+                return testEmbeddings.get(userId).get(embeddingType);
+            }
+            return null;
+        }
+        
         public PutItemRequest getLastPutItemRequest() {
             return lastPutItemRequest;
         }
