@@ -1,0 +1,33 @@
+<div class="step-indicator-container" [ngClass]="{'compact': compact, 'horizontal': horizontal, 'vertical': !horizontal}">
+  <div class="step-progress-summary" *ngIf="!compact">
+    <div class="step-progress-text">
+      <span class="step-count">Step {{ getCurrentStepNumber() }} of {{ totalSteps }}</span>
+      <span class="step-completion">{{ completedSteps }} completed</span>
+    </div>
+    <div class="step-progress-bar">
+      <div class="step-progress-fill" [style.width.%]="getProgressPercentage()"></div>
+    </div>
+  </div>
+  
+  <div class="step-list">
+    <div *ngFor="let step of steps" class="step-item" [ngClass]="{'step-current': step.stepId === currentStepId}">
+      <div class="step-indicator">
+        <div class="step-number" [ngClass]="getStepStatusClass(step)">
+          <span *ngIf="step.status !== 'Completed' && step.status !== 'Skipped'">{{ step.order }}</span>
+          <span *ngIf="step.status === 'Completed'" class="step-completed-icon">✓</span>
+          <span *ngIf="step.status === 'Skipped'" class="step-skipped-icon">→</span>
+        </div>
+        <div *ngIf="!isLastStep(step)" class="step-connector" [ngClass]="getStepConnectorClass(step)"></div>
+      </div>
+      <div class="step-content" *ngIf="!compact">
+        <div class="step-header">
+          <h4 class="step-name">{{ step.name }}</h4>
+          <span class="step-status" [ngClass]="'status-' + step.status.toLowerCase().replace(' ', '-')">
+            {{ step.status }}
+          </span>
+        </div>
+        <p *ngIf="step.description" class="step-description">{{ step.description }}</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -250,6 +250,57 @@ java -cp target/EmbeddingFunction-1.0.jar com.sample.examples.FinancialProfileDe
 - Optimize digital platforms based on behavioral patterns
 - Reduce friction in trading and account management processes
 
+## Status Tracker Application
+
+The project includes a Status Tracker application that allows financial advisors and operations teams to track the status of various financial processes:
+
+### Core Features
+
+1. **Status Dashboard**
+   - View all active statuses in a clean, intuitive interface
+   - Filter statuses by type (Account Opening, Trade Settlement, etc.)
+   - Quick access to detailed status information
+
+2. **Status Details**
+   - Comprehensive view of status information
+   - Metadata display for process-specific details
+   - Timeline view of status history
+   - Direct links to source systems
+
+3. **Step Tracking**
+   - Visual progress indicators for multi-step workflows
+   - Detailed tracking of each step's progress and status
+   - Support for various step statuses (Completed, In Progress, Not Started, Blocked, Skipped)
+   - Step-specific metadata including dates, assigned personnel, and notes
+   - Both compact and detailed views for different contexts
+
+4. **Search Capabilities**
+   - Search for statuses by various criteria
+   - Advanced filtering options
+   - Quick access to relevant results
+
+### Use Cases
+
+1. **Account Opening Process**
+   - Track each step from application submission to account activation
+   - Monitor document collection and verification
+   - Ensure compliance requirements are met
+
+2. **Trade Settlement**
+   - Track trade execution, clearing, and settlement
+   - Monitor for exceptions or delays
+   - Ensure timely completion of all steps
+
+3. **Investment Portfolio Rebalancing**
+   - Track analysis, strategy development, and execution
+   - Monitor client confirmation and performance review
+   - Ensure all steps are completed according to schedule
+
+4. **Client Onboarding**
+   - Track KYC/AML verification, document collection, and account setup
+   - Monitor advisor assignment and initial consultation
+   - Ensure smooth client experience during onboarding
+
 ## Development Environment
 
 If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  

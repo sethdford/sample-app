@@ -1,0 +1,255 @@
+<div class="details-container">
+  <div class="details-header">
+    <a routerLink="/dashboard" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Dashboard
+    </a>
+    <h1>Status Details</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-indicator">
+    <div class="spinner"></div>
+    <p>Loading status details...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <p>There was an error loading the status details. Please try again.</p>
+    <button (click)="loadStatus()" class="button-primary">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && !error && status" class="status-details-content">
+    <div class="status-card">
+      <div class="status-card-header">
+        <div class="status-title">
+          <h2>{{ status.statusSummary }}</h2>
+          <span class="status-badge" [ngClass]="'status-' + status.currentStage.toLowerCase().replace(' ', '-')">
+            {{ status.currentStage }}
+          </span>
+        </div>
+        <div class="status-meta">
+          <span class="status-id">ID: {{ status.statusId }}</span>
+          <span class="status-date">Created: {{ status.createdDate | date:'medium' }}</span>
+          <span class="status-date">Updated: {{ status.lastUpdatedDate | date:'medium' }}</span>
+        </div>
+      </div>
+
+      <div class="status-card-content">
+        <div class="section">
+          <h3>Basic Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Client ID</span>
+              <span class="info-value">{{ status.clientId }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Advisor ID</span>
+              <span class="info-value">{{ status.advisorId }}</span>
+            </div>
+            <div class="info-item" *ngIf="status.sourceId">
+              <span class="info-label">Source ID</span>
+              <span class="info-value">
+                <button (click)="openSourceSystem()" class="source-link">
+                  {{ status.sourceId }}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </button>
+              </span>
+            </div>
+            <div class="info-item" *ngIf="status.trackingId">
+              <span class="info-label">Tracking ID</span>
+              <span class="info-value">{{ status.trackingId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="status.statusDetails">
+          <h3>Status Details</h3>
+          <div class="details-text">
+            <p>{{ status.statusDetails }}</p>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="status.relatedDocuments && status.relatedDocuments.length > 0">
+          <h3>Related Documents</h3>
+          <ul class="documents-list">
+            <li *ngFor="let doc of status.relatedDocuments" class="document-item">
+              <a [href]="doc.url" target="_blank" class="document-link">
+                {{ doc.name }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+              <span class="document-type">{{ doc.type }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="section" *ngIf="status.metadata && getObjectKeys(status.metadata).length > 0">
+          <h3>Metadata</h3>
+          <div class="metadata-grid">
+            <div *ngFor="let key of getObjectKeys(status.metadata)" class="metadata-item">
+              <span class="metadata-key">{{ key }}</span>
+              <span class="metadata-value">{{ status.metadata[key] }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step Indicator Section -->
+        <div class="section" *ngIf="status.steps && status.steps.length > 0">
+          <h3>Progress Tracker</h3>
+          
+          <!-- Horizontal Step Indicator -->
+          <div class="horizontal-step-indicator">
+            <app-step-indicator
+              [steps]="status.steps"
+              [currentStepId]="status.currentStepId"
+              [totalSteps]="status.totalSteps || 0"
+              [completedSteps]="status.completedSteps || 0"
+              [horizontal]="true"
+              [compact]="false">
+            </app-step-indicator>
+          </div>
+          
+          <!-- Step Details -->
+          <div class="step-details-list">
+            <div *ngFor="let step of status.steps" class="step-detail-item" [ngClass]="{'step-current': step.stepId === status.currentStepId}">
+              <div class="step-detail-header">
+                <h4 class="step-name">{{ step.name }}</h4>
+                <span class="step-status" [ngClass]="'status-' + step.status.toLowerCase().replace(' ', '-')">
+                  {{ step.status }}
+                </span>
+              </div>
+              <p *ngIf="step.description" class="step-description">{{ step.description }}</p>
+              <div class="step-details">
+                <div *ngIf="step.startDate" class="step-detail">
+                  <span class="detail-label">Started:</span>
+                  <span class="detail-value">{{ step.startDate | date:'mediumDate' }}</span>
+                </div>
+                <div *ngIf="step.completionDate" class="step-detail">
+                  <span class="detail-label">Completed:</span>
+                  <span class="detail-value">{{ step.completionDate | date:'mediumDate' }}</span>
+                </div>
+                <div *ngIf="step.dueDate && !step.completionDate" class="step-detail">
+                  <span class="detail-label">Due:</span>
+                  <span class="detail-value">{{ step.dueDate | date:'mediumDate' }}</span>
+                </div>
+                <div *ngIf="step.assignedTo" class="step-detail">
+                  <span class="detail-label">Assigned To:</span>
+                  <span class="detail-value">{{ step.assignedTo }}</span>
+                </div>
+              </div>
+              <p *ngIf="step.notes" class="step-notes">{{ step.notes }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-Transactions Section -->
+        <div class="section" *ngIf="status.subTransactions && status.subTransactions.length > 0">
+          <h3>Sub-Transactions</h3>
+          <div class="sub-transactions-container">
+            <div *ngFor="let subTx of status.subTransactions" class="sub-transaction-card">
+              <div class="sub-transaction-header">
+                <h4>{{ subTx.name }}</h4>
+                <span class="sub-transaction-status" [ngClass]="'status-' + subTx.status.toLowerCase().replace(' ', '-')">
+                  {{ subTx.status }}
+                </span>
+              </div>
+              <div class="sub-transaction-content">
+                <p *ngIf="subTx.description" class="sub-transaction-description">{{ subTx.description }}</p>
+                <div class="sub-transaction-details">
+                  <div class="detail-item">
+                    <span class="detail-label">Start Date:</span>
+                    <span class="detail-value">{{ subTx.startDate | date:'mediumDate' }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="subTx.dueDate">
+                    <span class="detail-label">Due Date:</span>
+                    <span class="detail-value">{{ subTx.dueDate | date:'mediumDate' }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="subTx.completionDate">
+                    <span class="detail-label">Completed:</span>
+                    <span class="detail-value">{{ subTx.completionDate | date:'mediumDate' }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="subTx.assignedTo">
+                    <span class="detail-label">Assigned To:</span>
+                    <span class="detail-value">{{ subTx.assignedTo }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="subTx.priority">
+                    <span class="detail-label">Priority:</span>
+                    <span class="detail-value">{{ subTx.priority }}</span>
+                  </div>
+                </div>
+                <div class="progress-container" *ngIf="subTx.progress !== undefined">
+                  <span class="progress-label">Progress: {{ subTx.progress }}%</span>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="subTx.progress"></div>
+                  </div>
+                </div>
+                <div class="sub-transaction-notes" *ngIf="subTx.notes">
+                  <h5>Notes</h5>
+                  <p>{{ subTx.notes }}</p>
+                </div>
+                <div class="sub-transaction-documents" *ngIf="subTx.documents && subTx.documents.length > 0">
+                  <h5>Documents</h5>
+                  <ul class="documents-list">
+                    <li *ngFor="let doc of subTx.documents" class="document-item">
+                      <a [href]="doc.url" target="_blank" class="document-link">
+                        {{ doc.name }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                          <polyline points="15 3 21 3 21 9"></polyline>
+                          <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                      </a>
+                      <span class="document-type">{{ doc.type }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Status History</h3>
+          <div *ngIf="!status.statusHistory || status.statusHistory.length === 0" class="empty-history">
+            <p>No history available for this status.</p>
+          </div>
+          <div *ngIf="status.statusHistory && status.statusHistory.length > 0" class="history-timeline">
+            <div *ngFor="let historyItem of getStatusHistorySorted(); let i = index" class="history-item">
+              <div class="history-marker">
+                <div class="history-dot"></div>
+                <div *ngIf="i < getStatusHistorySorted().length - 1" class="history-line"></div>
+              </div>
+              <div class="history-content">
+                <div class="history-header">
+                  <span class="history-date">{{ historyItem.timestamp | date:'medium' }}</span>
+                  <span class="history-user">{{ historyItem.changedBy }}</span>
+                </div>
+                <div class="history-change">
+                  <span class="stage-change">
+                    {{ historyItem.previousStage }} → {{ historyItem.newStage }}
+                  </span>
+                  <div *ngIf="historyItem.changeReason" class="change-reason">
+                    <span class="reason-label">Reason:</span>
+                    <span class="reason-text">{{ historyItem.changeReason }}</span>
+                  </div>
+                  <div *ngIf="historyItem.changeDescription" class="change-description">
+                    {{ historyItem.changeDescription }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

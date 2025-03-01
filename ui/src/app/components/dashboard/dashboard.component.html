@@ -1,0 +1,118 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Status Dashboard</h1>
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label>Filter by Status:</label>
+        <div class="button-group">
+          <button 
+            *ngFor="let type of statusTypes" 
+            [class.active]="selectedStatusType === type"
+            (click)="filterByType(type)" 
+            class="filter-button">
+            {{ type }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-list-container">
+    <div *ngIf="loading" class="loading-indicator">
+      <div class="spinner"></div>
+      <p>Loading statuses...</p>
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      <p>There was an error loading the statuses. Please try again.</p>
+      <button (click)="loadStatuses()" class="button-primary">Retry</button>
+    </div>
+
+    <div *ngIf="!loading && !error && recentStatuses.length === 0" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No statuses found</h3>
+      <p>There are no statuses matching your current filters.</p>
+    </div>
+
+    <div *ngIf="!loading && !error && recentStatuses.length > 0" class="status-list">
+      <div *ngFor="let status of paginatedStatuses" class="status-card" [routerLink]="['/status', status.statusId]">
+        <div class="status-card-header">
+          <div class="status-title">
+            <h3>{{ status.statusSummary }}</h3>
+            <span class="status-badge" [ngClass]="'status-' + status.currentStage.toLowerCase().replace(' ', '-')">
+              {{ status.currentStage }}
+            </span>
+          </div>
+          <div class="status-meta">
+            <span class="status-id">ID: {{ status.statusId }}</span>
+            <span class="status-date">Updated: {{ status.lastUpdatedDate | date:'medium' }}</span>
+          </div>
+        </div>
+        
+        <div class="status-card-content">
+          <div class="status-details">
+            <div class="detail-item">
+              <span class="detail-label">Client:</span>
+              <span class="detail-value">{{ status.clientId }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Advisor:</span>
+              <span class="detail-value">{{ status.advisorId }}</span>
+            </div>
+            <div class="detail-item" *ngIf="status.sourceId">
+              <span class="detail-label">Source:</span>
+              <span class="detail-value">
+                <a [href]="status.sourceSystemUrl" target="_blank" class="source-link">
+                  {{ status.sourceId }}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </a>
+              </span>
+            </div>
+          </div>
+          
+          <!-- Step Indicator for statuses with steps -->
+          <div *ngIf="status.steps && status.steps.length > 0" class="status-steps">
+            <div class="steps-header">
+              <span class="steps-title">Progress</span>
+              <span class="steps-count">{{ status.completedSteps || 0 }}/{{ status.totalSteps }}</span>
+            </div>
+            <app-step-indicator
+              [steps]="status.steps"
+              [currentStepId]="status.currentStepId"
+              [totalSteps]="status.totalSteps || 0"
+              [completedSteps]="status.completedSteps || 0"
+              [horizontal]="true"
+              [compact]="true">
+            </app-step-indicator>
+          </div>
+        </div>
+        
+        <div class="status-card-footer">
+          <div class="view-details">View Details</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && !error && totalPages > 1" class="pagination">
+      <button 
+        [disabled]="currentPage === 1" 
+        (click)="changePage(currentPage - 1)" 
+        class="pagination-button">
+        Previous
+      </button>
+      
+      <span class="pagination-info">Page {{ currentPage }} of {{ totalPages }}</span>
+      
+      <button 
+        [disabled]="currentPage === totalPages" 
+        (click)="changePage(currentPage + 1)" 
+        class="pagination-button">
+        Next
+      </button>
+    </div>
+  </div>
+</div> 

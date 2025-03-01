@@ -1,0 +1,342 @@
+.step-indicator-container {
+  margin: 1rem 0;
+  width: 100%;
+}
+
+// Progress summary styles
+.step-progress-summary {
+  margin-bottom: 1.5rem;
+}
+
+.step-progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.step-count {
+  font-weight: 500;
+  color: #333;
+}
+
+.step-completion {
+  color: #666;
+}
+
+.step-progress-bar {
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.step-progress-fill {
+  height: 100%;
+  background-color: #1976d2;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+// Step list styles
+.step-list {
+  display: flex;
+  position: relative;
+  margin: 1rem 0;
+}
+
+// Horizontal layout
+.horizontal {
+  .step-list {
+    flex-direction: row;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 0.5rem;
+    min-width: 80px;
+    max-width: 120px;
+    text-align: center;
+  }
+
+  .step-indicator {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .step-connector {
+    height: 2px;
+    width: 40px;
+    margin: 0 -5px;
+  }
+
+  .step-content {
+    width: 100%;
+  }
+
+  .step-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step-name {
+    font-size: 0.875rem;
+    margin: 0 0 0.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  .step-status {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 12px;
+    margin-bottom: 0.25rem;
+  }
+
+  .step-description {
+    font-size: 0.75rem;
+    color: #666;
+    margin: 0.25rem 0 0;
+    display: none; // Hide in horizontal mode
+  }
+}
+
+// Vertical layout
+.vertical {
+  .step-list {
+    flex-direction: column;
+  }
+
+  .step-item {
+    display: flex;
+    margin-bottom: 1.5rem;
+  }
+
+  .step-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 1rem;
+  }
+
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    z-index: 1;
+  }
+
+  .step-connector {
+    width: 2px;
+    height: 100%;
+    margin: -5px 0;
+    flex-grow: 1;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-name {
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .step-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+  }
+
+  .step-description {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0.5rem 0 0;
+  }
+}
+
+// Compact mode (for dashboard)
+.compact {
+  .step-list {
+    padding: 0;
+    margin: 0.5rem 0;
+  }
+
+  .step-item {
+    min-width: auto;
+    margin-right: 0;
+  }
+
+  .step-number {
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+  }
+
+  .step-connector {
+    width: 20px;
+    height: 2px;
+  }
+
+  &.horizontal .step-connector {
+    width: 20px;
+  }
+
+  &.vertical .step-connector {
+    height: 20px;
+  }
+}
+
+// Step status colors
+.step-completed {
+  background-color: #4caf50;
+  color: white;
+}
+
+.step-in-progress {
+  background-color: #1976d2;
+  color: white;
+}
+
+.step-blocked {
+  background-color: #f44336;
+  color: white;
+}
+
+.step-skipped {
+  background-color: #ff9800;
+  color: white;
+}
+
+.step-not-started {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
+// Connector status colors
+.connector-completed {
+  background-color: #4caf50;
+}
+
+.connector-in-progress {
+  background-color: #1976d2;
+}
+
+.connector-not-started {
+  background-color: #e0e0e0;
+}
+
+// Current step highlight
+.step-current {
+  .step-name {
+    font-weight: 600;
+    color: #1976d2;
+  }
+}
+
+// Status badges
+.status-completed {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.status-in-progress {
+  background-color: rgba(25, 118, 210, 0.1);
+  color: #1976d2;
+}
+
+.status-not-started {
+  background-color: rgba(224, 224, 224, 0.3);
+  color: #666;
+}
+
+.status-blocked {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
+
+.status-skipped {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+}
+
+// Icons
+.step-completed-icon, .step-skipped-icon {
+  font-size: 0.875rem;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .horizontal {
+    .step-list {
+      padding-bottom: 0.5rem;
+    }
+    
+    .step-item {
+      min-width: 60px;
+    }
+    
+    .step-number {
+      width: 24px;
+      height: 24px;
+      font-size: 0.75rem;
+    }
+    
+    .step-connector {
+      width: 20px;
+    }
+    
+    .step-name {
+      font-size: 0.75rem;
+    }
+  }
+  
+  .compact {
+    .step-number {
+      width: 16px;
+      height: 16px;
+      font-size: 0.625rem;
+    }
+    
+    .step-connector {
+      width: 12px;
+    }
+  }
+}
