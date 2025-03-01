@@ -1,6 +1,6 @@
 # Financial Services Embedding Application
 
-This project contains source code and supporting files for a serverless application that uses AWS Bedrock to generate embeddings for financial customer profiles, trading patterns, and behavioral analysis. Designed specifically for financial services companies like Schwab, Fidelity, JP Morgan, and Robinhood, this application enables sophisticated customer insights, personalized recommendations, and regulatory compliance monitoring.
+This project contains source code and supporting files for a serverless application that uses AWS Bedrock to generate embeddings for financial customer profiles, trading patterns, and behavioral analysis. Designed specifically for financial services companies, this application enables sophisticated customer insights, personalized recommendations, and regulatory compliance monitoring.
 
 ## Project Structure
 
