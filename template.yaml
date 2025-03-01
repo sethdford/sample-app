@@ -32,10 +32,7 @@ Resources:
           POWERTOOLS_LOGGER_LOG_EVENT: true
           POWERTOOLS_METRICS_NAMESPACE: embedding-app
           TABLE_NAME: "UserEmbeddings"
-          DAX_ENDPOINT: 
-            Fn::GetAtt: 
-              - UserEmbeddingsDAX
-              - ClusterDiscoveryEndpoint
+          DAX_ENDPOINT: !GetAtt UserEmbeddingsDAX.ClusterDiscoveryEndpoint
 
       Events:
         GenerateEmbedding:
@@ -50,7 +47,65 @@ Resources:
             Method: POST
 
   ##################################################
-  # 2) DynamoDB Table for Storing User Embeddings
+  # 2) Status Tracker Lambda Function
+  ##################################################
+  StatusTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: StatusTrackerFunction
+      Handler: com.sample.StatusTracker::handleRequest
+      Runtime: java17
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_LOG_LEVEL: INFO
+          POWERTOOLS_LOGGER_LOG_EVENT: true
+          POWERTOOLS_METRICS_NAMESPACE: status-tracker-app
+          STATUS_TABLE_NAME: "ClientStatusTracking"
+          DAX_ENDPOINT: !GetAtt ClientStatusDAX.ClusterDiscoveryEndpoint
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClientStatusTrackingTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - comprehend:DetectSentiment
+                - comprehend:DetectEntities
+              Resource: "*"
+      Events:
+        CreateStatus:
+          Type: Api
+          Properties:
+            Path: /status
+            Method: POST
+        UpdateStatus:
+          Type: Api
+          Properties:
+            Path: /status/{statusId}
+            Method: PUT
+        GetStatus:
+          Type: Api
+          Properties:
+            Path: /status/{statusId}
+            Method: GET
+        ListClientStatuses:
+          Type: Api
+          Properties:
+            Path: /client/{clientId}/statuses
+            Method: GET
+        ListAdvisorClientStatuses:
+          Type: Api
+          Properties:
+            Path: /advisor/{advisorId}/client-statuses
+            Method: GET
+        SearchStatuses:
+          Type: Api
+          Properties:
+            Path: /statuses/search
+            Method: POST
+
+  ##################################################
+  # 3) DynamoDB Table for Storing User Embeddings
   ##################################################
   UserEmbeddingsTable:
     Type: AWS::DynamoDB::Table
@@ -69,7 +124,55 @@ Resources:
           KeyType: "RANGE"
 
   ##################################################
-  # 3) AWS DAX Cluster for Caching Embeddings
+  # 4) DynamoDB Table for Client Status Tracking
+  ##################################################
+  ClientStatusTrackingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "ClientStatusTracking"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "status_id"
+          AttributeType: "S"
+        - AttributeName: "client_id"
+          AttributeType: "S"
+        - AttributeName: "created_date"
+          AttributeType: "S"
+        - AttributeName: "advisor_id"
+          AttributeType: "S"
+        - AttributeName: "status_type"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "status_id"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - IndexName: "ClientStatusIndex"
+          KeySchema:
+            - AttributeName: "client_id"
+              KeyType: "HASH"
+            - AttributeName: "created_date"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+        - IndexName: "AdvisorClientIndex"
+          KeySchema:
+            - AttributeName: "advisor_id"
+              KeyType: "HASH"
+            - AttributeName: "created_date"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+        - IndexName: "StatusTypeIndex"
+          KeySchema:
+            - AttributeName: "status_type"
+              KeyType: "HASH"
+            - AttributeName: "created_date"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+
+  ##################################################
+  # 5) AWS DAX Cluster for Caching Embeddings
   ##################################################
   UserEmbeddingsDAX:
     Type: AWS::DAX::Cluster
@@ -77,13 +180,21 @@ Resources:
       ClusterName: "UserEmbeddingsDAX"
       NodeType: "dax.t3.small"
       ReplicationFactor: 1
-      IAMRoleARN: 
-        Fn::GetAtt: 
-          - DAXIAMRole
-          - Arn
+      IAMRoleARN: !GetAtt DAXIAMRole.Arn
 
   ##################################################
-  # 4) IAM Role for DAX Cluster (Updated Policies)
+  # 6) AWS DAX Cluster for Caching Client Status
+  ##################################################
+  ClientStatusDAX:
+    Type: AWS::DAX::Cluster
+    Properties:
+      ClusterName: "ClientStatusDAX"
+      NodeType: "dax.t3.small"
+      ReplicationFactor: 1
+      IAMRoleARN: !GetAtt DAXIAMRole.Arn
+
+  ##################################################
+  # 7) IAM Role for DAX Cluster (Updated Policies)
   ##################################################
   DAXIAMRole:
     Type: AWS::IAM::Role
@@ -110,139 +221,147 @@ Resources:
                   - dynamodb:BatchGetItem
                   - dynamodb:BatchWriteItem
                 Resource: 
-                  Fn::GetAtt: 
-                    - UserEmbeddingsTable
-                    - Arn
+                  - !GetAtt UserEmbeddingsTable.Arn
+                  - !GetAtt ClientStatusTrackingTable.Arn
+                  - !Sub "${ClientStatusTrackingTable.Arn}/index/*"
 
   ##################################################
-  # 5) Application Insights Monitoring
+  # 8) Application Insights Monitoring
   ##################################################
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:
-      Name: 
-        Fn::Sub: "ApplicationInsights-SAM-${AWS::StackName}"
+      Name: !Sub "ApplicationInsights-SAM-${AWS::StackName}"
       ResourceQuery:
         Type: "CLOUDFORMATION_STACK_1_0"
 
   ApplicationInsightsMonitoring:
     Type: AWS::ApplicationInsights::Application
     Properties:
-      ResourceGroupName: 
-        Ref: ApplicationResourceGroup
+      ResourceGroupName: !Ref ApplicationResourceGroup
       AutoConfigurationEnabled: true
 
   ##################################################
-  # 6) CloudWatch Dashboard for Telemetry
+  # 9) CloudWatch Dashboard for Telemetry
   ##################################################
   TelemetryDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
-      DashboardName: 
-        Fn::Sub: "${AWS::StackName}-Telemetry"
-      DashboardBody: 
-        Fn::Sub: |
-          {
-            "widgets": [
-              {
-                "type": "metric",
-                "x": 0,
-                "y": 0,
-                "width": 12,
-                "height": 6,
-                "properties": {
-                  "metrics": [
-                    [ "embedding-app", "EmbeddingGenerationTime", "Service", "EmbeddingService" ],
-                    [ "embedding-app", "OpenSearchQueryTime", "Service", "UserMatchingService" ]
-                  ],
-                  "view": "timeSeries",
-                  "stacked": false,
-                  "region": "${AWS::Region}",
-                  "title": "Embedding Generation and Query Performance",
-                  "period": 60
-                }
-              },
-              {
-                "type": "metric",
-                "x": 12,
-                "y": 0,
-                "width": 12,
-                "height": 6,
-                "properties": {
-                  "metrics": [
-                    [ "AWS/Lambda", "Invocations", "FunctionName", "${EmbeddingFunction}" ],
-                    [ "AWS/Lambda", "Errors", "FunctionName", "${EmbeddingFunction}" ],
-                    [ "AWS/Lambda", "Duration", "FunctionName", "${EmbeddingFunction}" ]
-                  ],
-                  "view": "timeSeries",
-                  "stacked": false,
-                  "region": "${AWS::Region}",
-                  "title": "Lambda Performance",
-                  "period": 60
-                }
-              },
-              {
-                "type": "metric",
-                "x": 0,
-                "y": 6,
-                "width": 12,
-                "height": 6,
-                "properties": {
-                  "metrics": [
-                    [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "UserEmbeddings", "Operation", "GetItem" ],
-                    [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "UserEmbeddings", "Operation", "PutItem" ]
-                  ],
-                  "view": "timeSeries",
-                  "stacked": false,
-                  "region": "${AWS::Region}",
-                  "title": "DynamoDB Latency",
-                  "period": 60
-                }
-              },
-              {
-                "type": "metric",
-                "x": 12,
-                "y": 6,
-                "width": 12,
-                "height": 6,
-                "properties": {
-                  "metrics": [
-                    [ "AWS/DAX", "SuccessfulRequestLatency", "ClusterName", "UserEmbeddingsDAX" ]
-                  ],
-                  "view": "timeSeries",
-                  "stacked": false,
-                  "region": "${AWS::Region}",
-                  "title": "DAX Latency",
-                  "period": 60
-                }
+      DashboardName: !Sub "${AWS::StackName}-Telemetry"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "embedding-app", "EmbeddingGenerationTime", "Service", "EmbeddingService" ],
+                  [ "embedding-app", "OpenSearchQueryTime", "Service", "UserMatchingService" ],
+                  [ "status-tracker-app", "StatusProcessingTime", "Service", "StatusTrackerService" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Service Performance",
+                "period": 60
               }
-            ]
-          }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/Lambda", "Invocations", "FunctionName", "${EmbeddingFunction}" ],
+                  [ "AWS/Lambda", "Errors", "FunctionName", "${EmbeddingFunction}" ],
+                  [ "AWS/Lambda", "Duration", "FunctionName", "${EmbeddingFunction}" ],
+                  [ "AWS/Lambda", "Invocations", "FunctionName", "${StatusTrackerFunction}" ],
+                  [ "AWS/Lambda", "Errors", "FunctionName", "${StatusTrackerFunction}" ],
+                  [ "AWS/Lambda", "Duration", "FunctionName", "${StatusTrackerFunction}" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Lambda Performance",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 6,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "UserEmbeddings", "Operation", "GetItem" ],
+                  [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "UserEmbeddings", "Operation", "PutItem" ],
+                  [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "ClientStatusTracking", "Operation", "GetItem" ],
+                  [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "ClientStatusTracking", "Operation", "PutItem" ],
+                  [ "AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "ClientStatusTracking", "Operation", "Query" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "DynamoDB Latency",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 6,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/DAX", "SuccessfulRequestLatency", "ClusterName", "UserEmbeddingsDAX" ],
+                  [ "AWS/DAX", "SuccessfulRequestLatency", "ClusterName", "ClientStatusDAX" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "DAX Latency",
+                "period": 60
+              }
+            }
+          ]
+        }
 
 Outputs:
   ##################################################
-  # 7) API Gateway Output
+  # 10) API Gateway Output
   ##################################################
   EmbeddingApi:
     Description: API Gateway endpoint URL for embedding functions
-    Value: 
-      Fn::Sub: "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+
+  StatusTrackerApi:
+    Description: API Gateway endpoint URL for status tracker functions
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
 
   EmbeddingFunction:
     Description: Embedding Lambda Function ARN
-    Value: 
-      Fn::GetAtt: 
-        - EmbeddingFunction
-        - Arn
+    Value: !GetAtt EmbeddingFunction.Arn
+
+  StatusTrackerFunction:
+    Description: Status Tracker Lambda Function ARN
+    Value: !GetAtt StatusTrackerFunction.Arn
 
   EmbeddingFunctionIamRole:
     Description: IAM Role for Embedding Function
-    Value: 
-      Fn::GetAtt: 
-        - EmbeddingFunctionRole
-        - Arn
+    Value: !GetAtt EmbeddingFunctionRole.Arn
+      
+  StatusTrackerFunctionIamRole:
+    Description: IAM Role for Status Tracker Function
+    Value: !GetAtt StatusTrackerFunctionRole.Arn
       
   TelemetryDashboardURL:
     Description: URL for the CloudWatch Telemetry Dashboard
-    Value:
-      Fn::Sub: "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${AWS::StackName}-Telemetry"
+    Value: !Sub "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${AWS::StackName}-Telemetry"
