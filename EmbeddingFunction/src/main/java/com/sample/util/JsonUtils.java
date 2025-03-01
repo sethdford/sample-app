@@ -54,4 +54,77 @@ public class JsonUtils {
                     .withBody("{\"error\": \"Failed to serialize response\"}");
         }
     }
+
+    /**
+     * Convert a Map to a JSON string
+     * 
+     * @param map The map to convert
+     * @return JSON string representation
+     */
+    public static String toJson(Map<String, Object> map) {
+        if (map == null) {
+            return "null";
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        
+        boolean first = true;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (!first) {
+                sb.append(",");
+            }
+            first = false;
+            
+            sb.append("\"").append(entry.getKey()).append("\":");
+            
+            Object value = entry.getValue();
+            if (value instanceof String) {
+                sb.append("\"").append(value).append("\"");
+            } else if (value instanceof Number) {
+                sb.append(value);
+            } else if (value instanceof Boolean) {
+                sb.append(value);
+            } else if (value instanceof Map) {
+                sb.append(toJson((Map<String, Object>) value));
+            } else if (value instanceof Map[]) {
+                sb.append("[");
+                Map[] maps = (Map[]) value;
+                for (int i = 0; i < maps.length; i++) {
+                    if (i > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(toJson((Map<String, Object>) maps[i]));
+                }
+                sb.append("]");
+            } else if (value instanceof String[]) {
+                sb.append("[");
+                String[] strings = (String[]) value;
+                for (int i = 0; i < strings.length; i++) {
+                    if (i > 0) {
+                        sb.append(",");
+                    }
+                    sb.append("\"").append(strings[i]).append("\"");
+                }
+                sb.append("]");
+            } else if (value instanceof double[]) {
+                sb.append("[");
+                double[] doubles = (double[]) value;
+                for (int i = 0; i < doubles.length; i++) {
+                    if (i > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(doubles[i]);
+                }
+                sb.append("]");
+            } else if (value == null) {
+                sb.append("null");
+            } else {
+                sb.append("\"").append(value.toString()).append("\"");
+            }
+        }
+        
+        sb.append("}");
+        return sb.toString();
+    }
 }

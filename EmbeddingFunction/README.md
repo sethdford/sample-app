@@ -202,3 +202,256 @@ BedrockRuntimeClient bedrockClient = BedrockRuntimeClient.builder()
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 
+
+## Financial Services Test Data
+
+The project includes comprehensive test data specifically designed for financial services use cases:
+
+### 1. Client Profile Test Data
+
+Sample client profiles with financial attributes:
+- Investment preferences (conservative, moderate, aggressive)
+- Risk tolerance levels (low, medium, high)
+- Financial goals (retirement, education, wealth accumulation)
+- Account types (IRA, 401k, brokerage)
+- Advisory service preferences
+
+```json
+{
+  "user_id": "client-001",
+  "name": "John Smith",
+  "age": 45,
+  "location": "New York, NY",
+  "risk_tolerance": "moderate",
+  "investment_preferences": "Balanced portfolio with focus on dividend stocks and municipal bonds",
+  "financial_goals": "Retirement in 20 years, college funding for two children",
+  "account_types": ["IRA", "529 Plan", "Brokerage"],
+  "advisory_preferences": "Quarterly reviews with moderate digital engagement"
+}
+```
+
+### 2. Trading Pattern Test Data
+
+Sample trading pattern data for different client types:
+- Day traders with high-frequency trading patterns
+- Buy-and-hold investors with long-term strategies
+- Diversified investors with balanced portfolios
+- Sector-focused investors with concentrated positions
+
+```json
+{
+  "user_id": "trader-001",
+  "name": "Sarah Johnson",
+  "trading_style": "day_trader",
+  "preferred_securities": ["Tech stocks", "Options", "ETFs"],
+  "order_types": ["Market", "Limit", "Stop"],
+  "average_trade_value": 5000,
+  "trade_frequency": "15-20 trades per day",
+  "success_rate": 0.68,
+  "preferred_sectors": ["Technology", "Healthcare", "Consumer Discretionary"]
+}
+```
+
+### 3. Compliance Pattern Test Data
+
+Sample compliance data for regulatory monitoring:
+- KYC/AML compliance events
+- Trading restriction violations
+- Regulatory reporting events
+- Suspicious activity reports
+
+```json
+{
+  "user_id": "compliance-001",
+  "entity_name": "Global Investments LLC",
+  "compliance_events": [
+    {
+      "event_type": "KYC_UPDATE",
+      "date": "2025-01-15",
+      "status": "Completed",
+      "notes": "Annual KYC review completed successfully"
+    },
+    {
+      "event_type": "TRADING_RESTRICTION",
+      "date": "2025-02-03",
+      "status": "Violation",
+      "notes": "Attempted trade in restricted security, blocked by system"
+    }
+  ],
+  "compliance_rate": 0.95,
+  "risk_level": "Medium"
+}
+```
+
+### 4. Client Effort Test Data
+
+Sample client effort data for experience optimization:
+- Navigation patterns
+- Error encounters
+- Support interactions
+- Channel switching behavior
+
+```json
+{
+  "user_id": "effort-001",
+  "session_id": "session-12345",
+  "date": "2025-03-01",
+  "navigation_path": [
+    {"page": "login", "time_spent": 15, "errors": 0},
+    {"page": "dashboard", "time_spent": 45, "errors": 0},
+    {"page": "account_details", "time_spent": 120, "errors": 2},
+    {"page": "trade_entry", "time_spent": 300, "errors": 3},
+    {"page": "support_chat", "time_spent": 450, "errors": 0}
+  ],
+  "channel_switches": 2,
+  "effort_score": 7.8,
+  "completion_status": "Abandoned"
+}
+```
+
+## Running Financial Services Demos
+
+The project includes specialized demos for financial services use cases:
+
+### Financial Profile Demo
+
+```bash
+java -cp target/EmbeddingFunction-1.0.jar com.sample.examples.FinancialProfileDemo
+```
+
+This demo:
+1. Creates sample financial client profiles
+2. Generates embeddings for each profile
+3. Finds similar clients based on financial attributes
+4. Recommends suitable financial products and advisors
+
+### Trading Pattern Demo
+
+```bash
+java -cp target/EmbeddingFunction-1.0.jar com.sample.examples.TradingPatternDemo
+```
+
+This demo:
+1. Analyzes sample trading logs
+2. Identifies trading styles and preferences
+3. Detects anomalous trading behavior
+4. Generates trading style embeddings
+
+### Compliance Pattern Demo
+
+```bash
+java -cp target/EmbeddingFunction-1.0.jar com.sample.examples.CompliancePatternDemo
+```
+
+This demo:
+1. Analyzes compliance logs
+2. Calculates compliance risk scores
+3. Identifies patterns of regulatory issues
+4. Generates compliance embeddings for monitoring
+
+### Client Effort Demo
+
+```bash
+java -cp target/EmbeddingFunction-1.0.jar com.sample.examples.ClientEffortDemo
+```
+
+This demo:
+1. Analyzes user interaction logs
+2. Identifies high-effort user journeys
+3. Detects friction points in digital experiences
+4. Generates client effort embeddings
+
+## Planned UI for Embedding Function
+
+A dedicated UI for the Embedding Function is in development, which will provide:
+
+### 1. Embedding Visualization
+
+- Interactive 2D/3D visualization of client embeddings using t-SNE or UMAP
+- Clustering visualization to identify client segments
+- Similarity comparison between clients with visual distance metrics
+- Temporal visualization showing changes in client profiles over time
+
+### 2. Embedding Management
+
+- Create, view, update, and delete embeddings through a user-friendly interface
+- Batch processing for multiple clients with progress tracking
+- Version control for embeddings with comparison tools
+- Performance metrics for embedding models with quality assessment
+
+### 3. Integration Configuration
+
+- Configure integration points with Status Tracker through a visual interface
+- Set up automated workflows based on embedding analysis
+- Define thresholds for alerts and notifications with visual sliders
+- Customize recommendation algorithms with parameter tuning
+
+### 4. Analytics Dashboard
+
+- Track embedding usage and performance with real-time metrics
+- Monitor system health and API performance with visual graphs
+- Analyze embedding quality and effectiveness with diagnostic tools
+- Generate reports on client segmentation and trends with export options
+
+The UI will follow an Apple-inspired design system with:
+- Clean, minimalist aesthetics
+- Ample white space
+- Subtle shadows and rounded corners
+- Consistent typography and color palette
+- Responsive design for all screen sizes
+
+## UI Development Roadmap
+
+The development of the Embedding Function UI will follow this roadmap:
+
+### Phase 1: Core Functionality (Q2 2025)
+- Basic embedding visualization
+- Simple embedding management
+- Initial integration with Status Tracker
+- Basic analytics dashboard
+
+### Phase 2: Enhanced Visualization (Q3 2025)
+- Advanced 3D visualization
+- Interactive clustering tools
+- Temporal analysis visualization
+- Comparative visualization
+
+### Phase 3: Advanced Management (Q4 2025)
+- Batch processing with advanced options
+- Version control system
+- Model performance optimization
+- Quality assessment tools
+
+### Phase 4: Full Integration (Q1 2026)
+- Complete Status Tracker integration
+- Workflow automation tools
+- Advanced alerting system
+- Customizable recommendation engine
+
+## Running the UI
+
+To run the Embedding Function UI:
+
+1. Build the project:
+   ```bash
+   mvn clean package
+   ```
+
+2. Start the UI server:
+   ```bash
+   java -cp target/user-embedding-service-1.0-SNAPSHOT.jar com.sample.WebServer
+   ```
+
+3. Open your browser and navigate to:
+   ```
+   http://localhost:8080
+   ```
+
+The UI provides:
+
+- Interactive visualization of client embeddings
+- Management interface for embeddings
+- Integration configuration with Status Tracker
+- Analytics dashboard for monitoring performance
+
+For more details, see the [UI README](src/main/resources/static/README.md). 

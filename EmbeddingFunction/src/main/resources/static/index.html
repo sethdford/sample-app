@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedding Function Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="#0066CC"/>
+                    <path d="M12 20L20 12L28 20L20 28L12 20Z" fill="white"/>
+                </svg>
+                <h1>Embedding Function</h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#" class="active">Dashboard</a></li>
+                    <li><a href="#visualization">Visualization</a></li>
+                    <li><a href="#management">Management</a></li>
+                    <li><a href="#integration">Integration</a></li>
+                    <li><a href="#analytics">Analytics</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <button class="btn-secondary">Settings</button>
+                <button class="btn-primary">New Embedding</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="dashboard-overview">
+                <h2>Embedding Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Embeddings</h3>
+                        <div class="stat-value">12,458</div>
+                        <div class="stat-change positive">+14.5% from last month</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>API Requests</h3>
+                        <div class="stat-value">845,632</div>
+                        <div class="stat-change positive">+23.7% from last month</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Response Time</h3>
+                        <div class="stat-value">42ms</div>
+                        <div class="stat-change negative">+8.3% from last month</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Success Rate</h3>
+                        <div class="stat-value">99.8%</div>
+                        <div class="stat-change positive">+0.2% from last month</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="visualization" class="embedding-visualization">
+                <div class="section-header">
+                    <h2>Embedding Visualization</h2>
+                    <div class="section-controls">
+                        <select id="visualization-type">
+                            <option value="2d">2D Visualization</option>
+                            <option value="3d">3D Visualization</option>
+                            <option value="cluster">Cluster View</option>
+                            <option value="temporal">Temporal View</option>
+                        </select>
+                        <button class="btn-secondary">Export</button>
+                    </div>
+                </div>
+                <div class="visualization-container">
+                    <div class="visualization-canvas">
+                        <canvas id="embedding-canvas"></canvas>
+                    </div>
+                    <div class="visualization-sidebar">
+                        <div class="sidebar-section">
+                            <h3>Selected Client</h3>
+                            <div class="client-details">
+                                <div class="client-detail">
+                                    <span class="detail-label">ID:</span>
+                                    <span class="detail-value">client-001</span>
+                                </div>
+                                <div class="client-detail">
+                                    <span class="detail-label">Name:</span>
+                                    <span class="detail-value">John Smith</span>
+                                </div>
+                                <div class="client-detail">
+                                    <span class="detail-label">Risk Tolerance:</span>
+                                    <span class="detail-value">Moderate</span>
+                                </div>
+                                <div class="client-detail">
+                                    <span class="detail-label">Investment Style:</span>
+                                    <span class="detail-value">Balanced</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sidebar-section">
+                            <h3>Similar Clients</h3>
+                            <ul class="similar-clients-list">
+                                <li>
+                                    <span class="client-name">Sarah Johnson</span>
+                                    <span class="similarity-score">92%</span>
+                                </li>
+                                <li>
+                                    <span class="client-name">Michael Brown</span>
+                                    <span class="similarity-score">87%</span>
+                                </li>
+                                <li>
+                                    <span class="client-name">Emily Davis</span>
+                                    <span class="similarity-score">85%</span>
+                                </li>
+                                <li>
+                                    <span class="client-name">Robert Wilson</span>
+                                    <span class="similarity-score">79%</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="management" class="embedding-management">
+                <div class="section-header">
+                    <h2>Embedding Management</h2>
+                    <div class="section-controls">
+                        <button class="btn-secondary">Import</button>
+                        <button class="btn-primary">Create New</button>
+                    </div>
+                </div>
+                <div class="management-container">
+                    <div class="filter-bar">
+                        <div class="search-box">
+                            <input type="text" placeholder="Search embeddings...">
+                            <button class="search-btn">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15.7 14.3L11.9 10.5C12.9 9.2 13.4 7.6 13.4 6C13.4 2.7 10.7 0 7.4 0C4.1 0 1.4 2.7 1.4 6C1.4 9.3 4.1 12 7.4 12C9 12 10.6 11.5 11.9 10.5L15.7 14.3C15.8 14.4 15.9 14.4 16 14.4C16.1 14.4 16.2 14.4 16.3 14.3C16.5 14.1 16.5 13.9 16.3 13.7L15.7 14.3ZM7.4 11C4.7 11 2.4 8.7 2.4 6C2.4 3.3 4.7 1 7.4 1C10.1 1 12.4 3.3 12.4 6C12.4 8.7 10.1 11 7.4 11Z" fill="#666"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="filter-options">
+                            <select>
+                                <option>All Types</option>
+                                <option>Financial Profile</option>
+                                <option>Trading Pattern</option>
+                                <option>Compliance Pattern</option>
+                                <option>Client Effort</option>
+                            </select>
+                            <select>
+                                <option>All Statuses</option>
+                                <option>Active</option>
+                                <option>Archived</option>
+                                <option>Draft</option>
+                            </select>
+                            <select>
+                                <option>Last 30 Days</option>
+                                <option>Last 90 Days</option>
+                                <option>Last Year</option>
+                                <option>All Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table class="embeddings-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Created</th>
+                                <th>Last Updated</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>emb-001</td>
+                                <td>John Smith Profile</td>
+                                <td>Financial Profile</td>
+                                <td>2025-01-15</td>
+                                <td>2025-02-20</td>
+                                <td><span class="status-badge active">Active</span></td>
+                                <td class="actions">
+                                    <button class="action-btn">View</button>
+                                    <button class="action-btn">Edit</button>
+                                    <button class="action-btn">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>emb-002</td>
+                                <td>Sarah Johnson Profile</td>
+                                <td>Financial Profile</td>
+                                <td>2025-01-16</td>
+                                <td>2025-02-21</td>
+                                <td><span class="status-badge active">Active</span></td>
+                                <td class="actions">
+                                    <button class="action-btn">View</button>
+                                    <button class="action-btn">Edit</button>
+                                    <button class="action-btn">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>emb-003</td>
+                                <td>High-Frequency Trading Pattern</td>
+                                <td>Trading Pattern</td>
+                                <td>2025-01-20</td>
+                                <td>2025-02-22</td>
+                                <td><span class="status-badge active">Active</span></td>
+                                <td class="actions">
+                                    <button class="action-btn">View</button>
+                                    <button class="action-btn">Edit</button>
+                                    <button class="action-btn">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>emb-004</td>
+                                <td>KYC Compliance Pattern</td>
+                                <td>Compliance Pattern</td>
+                                <td>2025-01-25</td>
+                                <td>2025-02-23</td>
+                                <td><span class="status-badge archived">Archived</span></td>
+                                <td class="actions">
+                                    <button class="action-btn">View</button>
+                                    <button class="action-btn">Edit</button>
+                                    <button class="action-btn">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>emb-005</td>
+                                <td>Mobile App Client Effort</td>
+                                <td>Client Effort</td>
+                                <td>2025-02-01</td>
+                                <td>2025-02-24</td>
+                                <td><span class="status-badge draft">Draft</span></td>
+                                <td class="actions">
+                                    <button class="action-btn">View</button>
+                                    <button class="action-btn">Edit</button>
+                                    <button class="action-btn">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <button class="pagination-btn">Previous</button>
+                        <div class="pagination-pages">
+                            <button class="pagination-page active">1</button>
+                            <button class="pagination-page">2</button>
+                            <button class="pagination-page">3</button>
+                            <span>...</span>
+                            <button class="pagination-page">10</button>
+                        </div>
+                        <button class="pagination-btn">Next</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="integration" class="status-tracker-integration">
+                <div class="section-header">
+                    <h2>Status Tracker Integration</h2>
+                    <div class="section-controls">
+                        <button class="btn-secondary">Test Connection</button>
+                        <button class="btn-primary">Configure</button>
+                    </div>
+                </div>
+                <div class="integration-container">
+                    <div class="integration-status">
+                        <div class="status-indicator connected">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="#00AA55"/>
+                            </svg>
+                            <span>Connected to Status Tracker</span>
+                        </div>
+                        <div class="status-details">
+                            <div class="status-detail">
+                                <span class="detail-label">Last Sync:</span>
+                                <span class="detail-value">2025-03-01 14:32:45</span>
+                            </div>
+                            <div class="status-detail">
+                                <span class="detail-label">Sync Status:</span>
+                                <span class="detail-value">Success</span>
+                            </div>
+                            <div class="status-detail">
+                                <span class="detail-label">API Version:</span>
+                                <span class="detail-value">v2.3.1</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="integration-workflows">
+                        <h3>Active Workflows</h3>
+                        <div class="workflow-cards">
+                            <div class="workflow-card">
+                                <div class="workflow-header">
+                                    <h4>Client Onboarding</h4>
+                                    <span class="workflow-status active">Active</span>
+                                </div>
+                                <div class="workflow-body">
+                                    <p>Automatically generates client embeddings during onboarding process and updates Status Tracker.</p>
+                                    <div class="workflow-stats">
+                                        <div class="workflow-stat">
+                                            <span class="stat-label">Executions:</span>
+                                            <span class="stat-value">245</span>
+                                        </div>
+                                        <div class="workflow-stat">
+                                            <span class="stat-label">Success Rate:</span>
+                                            <span class="stat-value">98.8%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="workflow-footer">
+                                    <button class="btn-text">Edit</button>
+                                    <button class="btn-text">Disable</button>
+                                    <button class="btn-text">View History</button>
+                                </div>
+                            </div>
+                            <div class="workflow-card">
+                                <div class="workflow-header">
+                                    <h4>Trading Pattern Analysis</h4>
+                                    <span class="workflow-status active">Active</span>
+                                </div>
+                                <div class="workflow-body">
+                                    <p>Analyzes trading patterns weekly and updates client risk profiles in Status Tracker.</p>
+                                    <div class="workflow-stats">
+                                        <div class="workflow-stat">
+                                            <span class="stat-label">Executions:</span>
+                                            <span class="stat-value">52</span>
+                                        </div>
+                                        <div class="workflow-stat">
+                                            <span class="stat-label">Success Rate:</span>
+                                            <span class="stat-value">100%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="workflow-footer">
+                                    <button class="btn-text">Edit</button>
+                                    <button class="btn-text">Disable</button>
+                                    <button class="btn-text">View History</button>
+                                </div>
+                            </div>
+                            <div class="workflow-card">
+                                <div class="workflow-header">
+                                    <h4>Compliance Monitoring</h4>
+                                    <span class="workflow-status active">Active</span>
+                                </div>
+                                <div class="workflow-body">
+                                    <p>Daily compliance check with embedding-based anomaly detection, updates Status Tracker with alerts.</p>
+                                    <div class="workflow-stats">
+                                        <div class="workflow-stat">
+                                            <span class="stat-label">Executions:</span>
+                                            <span class="stat-value">365</span>
+                                        </div>
+                                        <div class="workflow-stat">
+                                            <span class="stat-label">Success Rate:</span>
+                                            <span class="stat-value">99.7%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="workflow-footer">
+                                    <button class="btn-text">Edit</button>
+                                    <button class="btn-text">Disable</button>
+                                    <button class="btn-text">View History</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="analytics" class="embedding-analytics">
+                <div class="section-header">
+                    <h2>Analytics Dashboard</h2>
+                    <div class="section-controls">
+                        <select id="analytics-timeframe">
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d" selected>Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="1y">Last Year</option>
+                        </select>
+                        <button class="btn-secondary">Export Report</button>
+                    </div>
+                </div>
+                <div class="analytics-container">
+                    <div class="analytics-row">
+                        <div class="analytics-card wide">
+                            <h3>API Requests Over Time</h3>
+                            <div class="chart-container">
+                                <canvas id="api-requests-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-row">
+                        <div class="analytics-card">
+                            <h3>Embedding Types Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="embedding-types-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>Response Time Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="response-time-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-row">
+                        <div class="analytics-card">
+                            <h3>Top Users</h3>
+                            <table class="analytics-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Requests</th>
+                                        <th>Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Client Onboarding Service</td>
+                                        <td>245,632</td>
+                                        <td>28.9%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Trading Analysis Service</td>
+                                        <td>198,745</td>
+                                        <td>23.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Compliance Monitoring</td>
+                                        <td>156,321</td>
+                                        <td>18.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Client Portal</td>
+                                        <td>98,765</td>
+                                        <td>11.6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Advisor Dashboard</td>
+                                        <td>87,654</td>
+                                        <td>10.3%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>System Health</h3>
+                            <div class="health-metrics">
+                                <div class="health-metric">
+                                    <div class="metric-header">
+                                        <span class="metric-name">CPU Usage</span>
+                                        <span class="metric-value">42%</span>
+                                    </div>
+                                    <div class="metric-bar">
+                                        <div class="metric-progress" style="width: 42%"></div>
+                                    </div>
+                                </div>
+                                <div class="health-metric">
+                                    <div class="metric-header">
+                                        <span class="metric-name">Memory Usage</span>
+                                        <span class="metric-value">68%</span>
+                                    </div>
+                                    <div class="metric-bar">
+                                        <div class="metric-progress" style="width: 68%"></div>
+                                    </div>
+                                </div>
+                                <div class="health-metric">
+                                    <div class="metric-header">
+                                        <span class="metric-name">Disk Usage</span>
+                                        <span class="metric-value">37%</span>
+                                    </div>
+                                    <div class="metric-bar">
+                                        <div class="metric-progress" style="width: 37%"></div>
+                                    </div>
+                                </div>
+                                <div class="health-metric">
+                                    <div class="metric-header">
+                                        <span class="metric-name">Network Load</span>
+                                        <span class="metric-value">51%</span>
+                                    </div>
+                                    <div class="metric-bar">
+                                        <div class="metric-progress" style="width: 51%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="24" height="24" rx="4" fill="#0066CC"/>
+                        <path d="M7.2 12L12 7.2L16.8 12L12 16.8L7.2 12Z" fill="white"/>
+                    </svg>
+                    <span>Embedding Function</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Documentation</a>
+                    <a href="#">API Reference</a>
+                    <a href="#">Support</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+                <div class="footer-copyright">
+                    &copy; 2025 Sample Financial Services. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html> 

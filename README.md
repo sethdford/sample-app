@@ -301,6 +301,114 @@ The project includes a Status Tracker application that allows financial advisors
    - Monitor advisor assignment and initial consultation
    - Ensure smooth client experience during onboarding
 
+## Integration Between Status Tracker and Embedding Function
+
+The Status Tracker application and Embedding Function are designed to work together to provide a comprehensive solution for financial services:
+
+### 1. Enhanced Status Recommendations
+
+The Embedding Function analyzes client profiles and generates embeddings that the Status Tracker uses to:
+- Recommend similar statuses for reference
+- Predict potential issues based on similar past cases
+- Suggest optimal workflows based on client characteristics
+
+### 2. Intelligent Step Assignment
+
+Using embeddings from client profiles and historical data:
+- Automatically assign appropriate personnel to steps based on expertise matching
+- Predict step completion times based on similar past workflows
+- Identify potential bottlenecks before they occur
+
+### 3. Anomaly Detection
+
+The combined system can detect anomalies in workflow progression:
+- Identify unusual patterns in step completion times
+- Flag statuses that deviate from expected patterns
+- Alert users to potential compliance issues
+
+### 4. Personalized Client Communications
+
+Based on client embeddings, the system can:
+- Generate personalized status update messages
+- Tailor communication frequency based on client preferences
+- Adjust level of detail based on client sophistication
+
+## EmbeddingFunction UI
+
+The EmbeddingFunction now includes a comprehensive web-based user interface that provides visualization, management, and integration capabilities for embeddings used in financial services applications.
+
+### Key Features
+
+- **Interactive Visualization**: View client embeddings in 2D/3D space with clustering capabilities
+- **Embedding Management**: Create, view, update, and delete embeddings through a user-friendly interface
+- **Status Tracker Integration**: Configure integration points with the Status Tracker application
+- **Analytics Dashboard**: Monitor embedding usage, performance metrics, and system health
+
+### Running the UI
+
+To run the EmbeddingFunction UI:
+
+```bash
+cd EmbeddingFunction
+./run-ui.sh
+```
+
+Then open your browser and navigate to `http://localhost:8080`.
+
+### Integration with Status Tracker
+
+The EmbeddingFunction UI integrates with the Status Tracker application to provide:
+
+1. **Enhanced Status Recommendations**: Uses embeddings to recommend similar statuses and predict potential issues
+2. **Intelligent Step Assignment**: Automatically assigns personnel to steps based on expertise matching
+3. **Anomaly Detection**: Identifies unusual patterns in workflow progression
+4. **Personalized Client Communications**: Generates tailored status update messages based on client embeddings
+
+### Technical Implementation
+
+The UI is built using:
+- **Frontend**: HTML5, CSS3, JavaScript with Chart.js and D3.js for visualization
+- **Backend**: Java with Jetty Server for serving static content and API endpoints
+- **API**: RESTful JSON API for communication between frontend and backend
+
+For more details, see the [EmbeddingFunction README](EmbeddingFunction/README.md) and the [UI README](EmbeddingFunction/src/main/resources/static/README.md).
+
+## Status Tracker and EmbeddingFunction Integration
+
+The Status Tracker application and EmbeddingFunction are designed to work together to provide a comprehensive solution for financial services:
+
+### 1. Step Tracking with Embedding Insights
+
+Each step in a workflow can now include embedding-driven insights:
+- Recommendations based on similar client profiles
+- Risk assessments based on compliance patterns
+- Execution strategies based on trading patterns
+- Client communication preferences based on behavioral embeddings
+
+### 2. Workflow Optimization
+
+The combined system optimizes workflows by:
+- Predicting step completion times based on similar past workflows
+- Identifying potential bottlenecks before they occur
+- Suggesting optimal step sequences based on client characteristics
+- Automating routine steps based on embedding analysis
+
+### 3. Visual Progress Tracking
+
+The Status Tracker now includes enhanced visual progress tracking:
+- Horizontal step indicators on the dashboard
+- Detailed step information in the status details view
+- Color-coded step statuses (Completed, In Progress, Not Started, Blocked, Skipped)
+- Progress percentage indicators
+
+For a demonstration of the integration, run the StatusTrackerIntegrationDemo:
+
+```bash
+cd EmbeddingFunction
+mvn clean package
+java -cp target/user-embedding-service-1.0-SNAPSHOT.jar com.sample.examples.StatusTrackerIntegrationDemo
+```
+
 ## Development Environment
 
 If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  
