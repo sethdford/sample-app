@@ -1,4 +1,4 @@
-# Financial Services Embedding Application
+# Financial Services Sample Application (Built With Cursor)
 
 This project contains source code and supporting files for a serverless application that uses AWS Bedrock to generate embeddings for financial customer profiles, trading patterns, and behavioral analysis. Designed specifically for financial services companies, this application enables sophisticated customer insights, personalized recommendations, and regulatory compliance monitoring.
 
